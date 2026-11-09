@@ -1,6 +1,9 @@
+using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StormATC.Application.Options;
+using Microsoft.Extensions.Options;
 
 namespace StormATC.Desktop.ViewModels;
 
@@ -30,7 +33,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
         RadioViewModel radio,
         TranscriptViewModel transcript,
         SettingsViewModel settings,
-        DiagnosticsViewModel diagnostics)
+        DiagnosticsViewModel diagnostics,
+        ChecklistsViewModel checklists,
+        FlightMonitorViewModel flightMonitor,
+        MissionBuilderViewModel missionBuilder,
+        IOptions<ApplicationOptions> applicationOptions)
     {
         Dashboard = dashboard ?? throw new ArgumentNullException(nameof(dashboard));
         FlightPlan = flightPlan ?? throw new ArgumentNullException(nameof(flightPlan));
@@ -38,6 +45,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Transcript = transcript ?? throw new ArgumentNullException(nameof(transcript));
         Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        Checklists = checklists ?? throw new ArgumentNullException(nameof(checklists));
+        FlightMonitor = flightMonitor ?? throw new ArgumentNullException(nameof(flightMonitor));
+        MissionBuilder = missionBuilder ?? throw new ArgumentNullException(nameof(missionBuilder));
 
         Pages =
         [
@@ -79,6 +89,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 diagnostics),
         ];
 
+        _checklists = checklists;
+        _flightMonitor = flightMonitor;
+        _missionBuilder = missionBuilder;
+
+        var appOptions = applicationOptions ?? throw new ArgumentNullException(nameof(applicationOptions));
+        if (appOptions.Value.EnableAICopilotFeatures)
+        {
+            AddAICopilotPages();
+        }
+
         _currentPage = dashboard;
     }
 
@@ -100,8 +120,43 @@ public sealed partial class MainWindowViewModel : ObservableObject
     /// <summary>The diagnostics page.</summary>
     public DiagnosticsViewModel Diagnostics { get; }
 
+    private readonly ChecklistsViewModel _checklists;
+    private readonly FlightMonitorViewModel _flightMonitor;
+    private readonly MissionBuilderViewModel _missionBuilder;
+
+    /// <summary>The checklists page (AI Copilot Features).</summary>
+    public ChecklistsViewModel Checklists => _checklists;
+
+    /// <summary>The flight monitor page (AI Copilot Features).</summary>
+    public FlightMonitorViewModel FlightMonitor => _flightMonitor;
+
+    /// <summary>The mission builder page (AI Copilot Features).</summary>
+    public MissionBuilderViewModel MissionBuilder => _missionBuilder;
+
     /// <summary>Every navigable page, in order.</summary>
     public ObservableCollection<NavigationEntry> Pages { get; }
+
+    private void AddAICopilotPages()
+    {
+        Pages.Add(new NavigationEntry(
+            "Checklists",
+            "Standard operating procedures",
+            "\uE74F",
+            "Ctrl+7",
+            _checklists));
+        Pages.Add(new NavigationEntry(
+            "Flight Monitor",
+            "Flight phase, autopilot, terrain",
+            "\uE777",
+            "Ctrl+8",
+            _flightMonitor));
+        Pages.Add(new NavigationEntry(
+            "Mission Builder",
+            "Continuous flight missions",
+            "\uE7C5",
+            "Ctrl+9",
+            _missionBuilder));
+    }
 
     /// <summary>The application version shown in the shell footer.</summary>
     public static string VersionText =>

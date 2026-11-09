@@ -227,6 +227,58 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
     [ObservableProperty]
     private bool _restartRequired;
 
+    // =====================================================================================
+    // AI Copilot Features
+    // =====================================================================================
+
+    [ObservableProperty]
+    private bool _enableAICopilotFeatures;
+
+    [ObservableProperty]
+    private double _defaultCruiseSpeedKt = 140;
+
+    [ObservableProperty]
+    private double _defaultClimbRateFpm = 1200;
+
+    [ObservableProperty]
+    private double _defaultDescentRateFpm = 1500;
+
+    [ObservableProperty]
+    private double _preFlightSampleSpacingNm = 8.0;
+
+    [ObservableProperty]
+    private int _inFlightGridWidthPoints = 10;
+
+    [ObservableProperty]
+    private int _inFlightGridHeightPoints = 5;
+
+    [ObservableProperty]
+    private double _inFlightLookAheadNm = 15.0;
+
+    [ObservableProperty]
+    private TimeSpan _inFlightUpdateInterval = TimeSpan.FromSeconds(30);
+
+    [ObservableProperty]
+    private double _inFlightUpdateIntervalSeconds = 30;
+
+    [ObservableProperty]
+    private double _minRangeNm = 50;
+
+    [ObservableProperty]
+    private double _maxRangeNm = 500;
+
+    [ObservableProperty]
+    private int _serviceTimeMinutes = 30;
+
+    [ObservableProperty]
+    private double _reserveFactor = 0.9;
+
+    [ObservableProperty]
+    private bool _checklistEnabled = true;
+
+    [ObservableProperty]
+    private string _checklistDirectory = "flightchecklists";
+
     private readonly List<string> _recognitionKeyterms;
     private readonly Dictionary<string, string> _transcriptCorrections;
 
@@ -258,6 +310,10 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
         IOptions<AtcRealismOptions> realismOptions,
         IOptions<PersistenceOptions> persistenceOptions,
         IOptions<AudioOptions> audioOptions,
+        IOptions<FlightOptions> flightOptions,
+        IOptions<TerrainOptions> terrainOptions,
+        IOptions<ContinuousFlightOptions> continuousFlightOptions,
+        IOptions<ChecklistOptions> checklistOptions,
         ILogger<SettingsViewModel> logger)
     {
         _secretStore = secretStore ?? throw new ArgumentNullException(nameof(secretStore));
@@ -288,6 +344,10 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
         ArgumentNullException.ThrowIfNull(realismOptions);
         ArgumentNullException.ThrowIfNull(persistenceOptions);
         ArgumentNullException.ThrowIfNull(audioOptions);
+        ArgumentNullException.ThrowIfNull(flightOptions);
+        ArgumentNullException.ThrowIfNull(terrainOptions);
+        ArgumentNullException.ThrowIfNull(continuousFlightOptions);
+        ArgumentNullException.ThrowIfNull(checklistOptions);
 
         _openRouterModel = openRouterOptions.Value.Model;
         _openAIModel = openAIOptions.Value.Model;
@@ -338,6 +398,24 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
         _pushToTalkKey = audioOptions.Value.PushToTalkKey;
         _joystickPushToTalkEnabled = audioOptions.Value.JoystickPushToTalkEnabled;
         _joystickButtonIndex = audioOptions.Value.JoystickButtonIndex;
+
+        // AI Copilot Features
+        _enableAICopilotFeatures = applicationOptions.Value.EnableAICopilotFeatures;
+        _defaultCruiseSpeedKt = flightOptions.Value.DefaultCruiseSpeedKt;
+        _defaultClimbRateFpm = flightOptions.Value.DefaultClimbRateFpm;
+        _defaultDescentRateFpm = flightOptions.Value.DefaultDescentRateFpm;
+        _preFlightSampleSpacingNm = terrainOptions.Value.PreFlightSampleSpacingNm;
+        _inFlightGridWidthPoints = terrainOptions.Value.InFlightGridWidthPoints;
+        _inFlightGridHeightPoints = terrainOptions.Value.InFlightGridHeightPoints;
+        _inFlightLookAheadNm = terrainOptions.Value.InFlightLookAheadNm;
+        _inFlightUpdateInterval = terrainOptions.Value.InFlightUpdateInterval;
+        _inFlightUpdateIntervalSeconds = _inFlightUpdateInterval.TotalSeconds;
+        _minRangeNm = continuousFlightOptions.Value.MinRangeNm;
+        _maxRangeNm = continuousFlightOptions.Value.MaxRangeNm;
+        _serviceTimeMinutes = continuousFlightOptions.Value.ServiceTimeMinutes;
+        _reserveFactor = continuousFlightOptions.Value.ReserveFactor;
+        _checklistEnabled = checklistOptions.Value.Enabled;
+        _checklistDirectory = checklistOptions.Value.ChecklistDirectory;
 
         RealismProfiles = ["Relaxed", "Standard", "Strict"];
         PushbackDirectionChoices = [.. PushbackDirections.All];
@@ -1165,6 +1243,24 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
                     (AudioOptions.SectionName, "JoystickDeviceId", JsonValue.Create(joystickBinding?.DeviceId)),
                     (AudioOptions.SectionName, "JoystickDeviceName", JsonValue.Create(joystickBinding?.DeviceName)),
                     (AudioOptions.SectionName, "JoystickButtonIndex", JsonValue.Create(joystickBinding?.ButtonIndex)),
+
+                    // AI Copilot Features
+                    (ApplicationOptions.SectionName, "EnableAICopilotFeatures", JsonValue.Create(EnableAICopilotFeatures)),
+                    (FlightOptions.SectionName, "DefaultCruiseSpeedKt", JsonValue.Create(DefaultCruiseSpeedKt)),
+                    (FlightOptions.SectionName, "DefaultClimbRateFpm", JsonValue.Create(DefaultClimbRateFpm)),
+                    (FlightOptions.SectionName, "DefaultDescentRateFpm", JsonValue.Create(DefaultDescentRateFpm)),
+                    (TerrainOptions.SectionName, "PreFlightSampleSpacingNm", JsonValue.Create(PreFlightSampleSpacingNm)),
+                    (TerrainOptions.SectionName, "InFlightGridWidthPoints", JsonValue.Create(InFlightGridWidthPoints)),
+                    (TerrainOptions.SectionName, "InFlightGridHeightPoints", JsonValue.Create(InFlightGridHeightPoints)),
+                    (TerrainOptions.SectionName, "InFlightLookAheadNm", JsonValue.Create(InFlightLookAheadNm)),
+                    (TerrainOptions.SectionName, "InFlightUpdateInterval", JsonValue.Create(
+                        JsonSerializer.SerializeToNode(TimeSpan.FromSeconds(InFlightUpdateIntervalSeconds).TotalSeconds))),
+                    (ContinuousFlightOptions.SectionName, "MinRangeNm", JsonValue.Create(MinRangeNm)),
+                    (ContinuousFlightOptions.SectionName, "MaxRangeNm", JsonValue.Create(MaxRangeNm)),
+                    (ContinuousFlightOptions.SectionName, "ServiceTimeMinutes", JsonValue.Create(ServiceTimeMinutes)),
+                    (ContinuousFlightOptions.SectionName, "ReserveFactor", JsonValue.Create(ReserveFactor)),
+                    (ChecklistOptions.SectionName, "Enabled", JsonValue.Create(ChecklistEnabled)),
+                    (ChecklistOptions.SectionName, "ChecklistDirectory", JsonValue.Create(ChecklistDirectory)),
                 ],
                 CancellationToken.None).ConfigureAwait(true);
 

@@ -41,6 +41,15 @@
     <DataTemplate DataType="{x:Type vm:DiagnosticsViewModel}">
       <views:DiagnosticsView />
     </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ChecklistsViewModel}">
+      <views:ChecklistsView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:FlightMonitorViewModel}">
+      <views:FlightMonitorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:MissionBuilderViewModel}">
+      <views:MissionBuilderView />
+    </DataTemplate>
   </Window.Resources>
 
   <Grid>

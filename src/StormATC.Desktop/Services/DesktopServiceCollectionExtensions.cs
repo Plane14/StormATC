@@ -33,6 +33,9 @@ public static class DesktopServiceCollectionExtensions
         services.AddSingleton<TranscriptViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<DiagnosticsViewModel>();
+        services.AddSingleton<ChecklistsViewModel>();
+        services.AddSingleton<FlightMonitorViewModel>();
+        services.AddSingleton<MissionBuilderViewModel>();
         services.AddSingleton<MainWindowViewModel>();
 
         services.AddSingleton<MainWindow>();

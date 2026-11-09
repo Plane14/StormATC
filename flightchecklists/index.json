@@ -1,0 +1,10 @@
+{
+  "total": 3,
+  "aircraft": [
+    { "slug": "cessna-172", "name": "Cessna 172 Skyhawk" },
+    { "slug": "a320-neo", "name": "Airbus A320neo" },
+    { "slug": "generic-ga", "name": "Generic GA Aircraft" }
+  ],
+  "source": "flightchecklist.app/msfs",
+  "generated": "2026-11-09"
+}

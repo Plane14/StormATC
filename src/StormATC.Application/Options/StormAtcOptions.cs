@@ -45,6 +45,9 @@ public sealed class ApplicationOptions
     /// Realism profile name: <c>Relaxed</c>, <c>Standard</c>, or <c>Strict</c>.
     /// </summary>
     public string RealismProfile { get; init; } = "Standard";
+
+    /// <summary>When true, AI Copilot Features (flight phases, autopilot, terrain, checklists) are enabled.</summary>
+    public bool EnableAICopilotFeatures { get; init; }
 }
 
 /// <summary>Language-model selection and generation settings shared by every provider.</summary>
@@ -477,4 +480,82 @@ public sealed class DiagnosticsOptions
 
     /// <summary>When true, prompt content hashes are shown on the Diagnostics page.</summary>
     public bool ShowPromptHashes { get; init; } = true;
+}
+
+/// <summary>Flight performance default parameters.</summary>
+public sealed class FlightOptions
+{
+    public const string SectionName = "Flight";
+
+    /// <summary>Default cruise speed in knots.</summary>
+    [Range(1, 900)]
+    public double DefaultCruiseSpeedKt { get; init; } = 140;
+
+    /// <summary>Default climb rate in feet per minute.</summary>
+    [Range(1, 9000)]
+    public double DefaultClimbRateFpm { get; init; } = 1200;
+
+    /// <summary>Default descent rate in feet per minute.</summary>
+    [Range(1, 9000)]
+    public double DefaultDescentRateFpm { get; init; } = 1500;
+}
+
+/// <summary>Terrain analysis parameters.</summary>
+public sealed class TerrainOptions
+{
+    public const string SectionName = "Terrain";
+
+    /// <summary>Pre-flight terrain sample spacing in nautical miles.</summary>
+    [Range(1.0, 50.0)]
+    public double PreFlightSampleSpacingNm { get; init; } = 8.0;
+
+    /// <summary>In-flight terrain grid width points.</summary>
+    [Range(1, 100)]
+    public int InFlightGridWidthPoints { get; init; } = 10;
+
+    /// <summary>In-flight terrain grid height points.</summary>
+    [Range(1, 100)]
+    public int InFlightGridHeightPoints { get; init; } = 5;
+
+    /// <summary>In-flight look-ahead distance in nautical miles.</summary>
+    [Range(1.0, 100.0)]
+    public double InFlightLookAheadNm { get; init; } = 15.0;
+
+    /// <summary>In-flight terrain update interval.</summary>
+    [Range(100, 3600000)]
+    public TimeSpan InFlightUpdateInterval { get; init; } = TimeSpan.FromSeconds(30);
+}
+
+/// <summary>Continuous flight mission parameters.</summary>
+public sealed class ContinuousFlightOptions
+{
+    public const string SectionName = "ContinuousFlight";
+
+    /// <summary>Minimum leg range in nautical miles.</summary>
+    [Range(1, 5000)]
+    public double MinRangeNm { get; init; } = 50;
+
+    /// <summary>Maximum leg range in nautical miles.</summary>
+    [Range(1, 5000)]
+    public double MaxRangeNm { get; init; } = 500;
+
+    /// <summary>Service time per stop in minutes.</summary>
+    [Range(1, 480)]
+    public int ServiceTimeMinutes { get; init; } = 30;
+
+    /// <summary>Fuel reserve factor (0.0 to 1.0).</summary>
+    [Range(0.0, 1.0)]
+    public double ReserveFactor { get; init; } = 0.9;
+}
+
+/// <summary>Checklist system configuration.</summary>
+public sealed class ChecklistOptions
+{
+    public const string SectionName = "Checklist";
+
+    /// <summary>When true, checklist system is enabled.</summary>
+    public bool Enabled { get; init; } = true;
+
+    /// <summary>Directory containing checklist definition files.</summary>
+    public string ChecklistDirectory { get; init; } = "flightchecklists";
 }

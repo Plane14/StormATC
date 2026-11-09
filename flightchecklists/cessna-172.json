@@ -1,0 +1,649 @@
+{
+  "Id": "cessna-172",
+  "Name": "Cessna 172 Skyhawk",
+  "AircraftType": "C172",
+  "Category": "Preflight",
+  "Description": "Standard preflight inspection and startup checklist for Cessna 172 Skyhawk.",
+  "Steps": [
+    {
+      "Id": "01",
+      "Title": "Weather Briefing (METAR / TAF)",
+      "Description": "Check current conditions and forecast.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "02",
+      "Title": "NOTAMs",
+      "Description": "Check for runway closures and airspace restrictions.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "03",
+      "Title": "Fuel Required",
+      "Description": "Calculate fuel required for trip plus reserve.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "04",
+      "Title": "Weight & Balance",
+      "Description": "Verify within limits.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "05",
+      "Title": "Pitot Tube Cover",
+      "Description": "Remove - check for pitot blockage.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "06",
+      "Title": "Parking Brake",
+      "Description": "Set.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "07",
+      "Title": "Control Wheel Lock",
+      "Description": "Remove.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "08",
+      "Title": "MAGNETOS Switch",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "09",
+      "Title": "MASTER Switch",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "10",
+      "Title": "Fuel Quantity",
+      "Description": "CHECK VISUALLY.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "11",
+      "Title": "Control Surfaces",
+      "Description": "CHECK freedom of movement.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "12",
+      "Title": "Fuel Tank Sumps",
+      "Description": "DRAIN and check for contamination.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "13",
+      "Title": "Oil Level",
+      "Description": "CHECK AND SECURE.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "14",
+      "Title": "Propeller and Spinner",
+      "Description": "CHECK for nicks and security.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "15",
+      "Title": "Tires",
+      "Description": "CHECK inflation and condition.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "16",
+      "Title": "Throttle",
+      "Description": "OPEN 1/4 INCH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "17",
+      "Title": "Mixture",
+      "Description": "IDLE CUTOFF then FULL RICH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "18",
+      "Title": "Propeller Area",
+      "Description": "CLEAR.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "19",
+      "Title": "BEACON Light",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "20",
+      "Title": "MAGNETOS Switch",
+      "Description": "START - release when engine starts.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "21",
+      "Title": "Oil Pressure",
+      "Description": "CHECK - verify increases into green arc.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "22",
+      "Title": "AVIONICS Switch",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "23",
+      "Title": "Flight Controls",
+      "Description": "FREE and CORRECT.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "24",
+      "Title": "Flight Instruments",
+      "Description": "CHECK.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "25",
+      "Title": "Altimeters",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "26",
+      "Title": "Fuel Selector",
+      "Description": "SET BOTH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "27",
+      "Title": "Trim",
+      "Description": "SET FOR TAKEOFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "28",
+      "Title": "COM / NAV Frequencies",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "29",
+      "Title": "Transponder",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "30",
+      "Title": "Flaps",
+      "Description": "SET FOR TAKEOFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "31",
+      "Title": "Strobe Lights",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "32",
+      "Title": "Brakes",
+      "Description": "RELEASE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "33",
+      "Title": "Throttle",
+      "Description": "FULL.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "34",
+      "Title": "Mixture",
+      "Description": "RICH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "35",
+      "Title": "Elevator",
+      "Description": "LIFT NOSEWHEEL AT ROTATION SPEED.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "36",
+      "Title": "Climb Speed",
+      "Description": "CLIMB AT BEST RATE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "37",
+      "Title": "Flaps",
+      "Description": "RETRACT AT SAFE ALTITUDE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "38",
+      "Title": "Power",
+      "Description": "SET FOR CRUISE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "39",
+      "Title": "Trim",
+      "Description": "ADJUST.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "40",
+      "Title": "Mixture",
+      "Description": "LEAN for economy.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "41",
+      "Title": "Fuel",
+      "Description": "MONITOR.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "42",
+      "Title": "Power",
+      "Description": "REDUCE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "43",
+      "Title": "Mixture",
+      "Description": "ADJUST.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "44",
+      "Title": "Altimeters",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "45",
+      "Title": "Fuel Selector",
+      "Description": "BOTH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "46",
+      "Title": "Seats and Seat Belts",
+      "Description": "SECURED and LOCKED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "47",
+      "Title": "Mixture",
+      "Description": "RICH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "48",
+      "Title": "Landing Lights",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "49",
+      "Title": "Autopilot",
+      "Description": "OFF (if installed).",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "50",
+      "Title": "Airspeed",
+      "Description": "APPROACH SPEED.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "51",
+      "Title": "Flaps",
+      "Description": "AS DESIRED.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "52",
+      "Title": "Touchdown",
+      "Description": "MAIN WHEELS FIRST.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "53",
+      "Title": "Landing Roll",
+      "Description": "LOWER NOSEWHEEL GENTLY.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "54",
+      "Title": "Braking",
+      "Description": "AS REQUIRED.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "55",
+      "Title": "Flaps",
+      "Description": "UP.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "56",
+      "Title": "Parking Brake",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "57",
+      "Title": "Throttle",
+      "Description": "IDLE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "58",
+      "Title": "Electrical Equipment",
+      "Description": "OFF.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "59",
+      "Title": "AVIONICS Switch",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "60",
+      "Title": "Mixture",
+      "Description": "IDLE CUTOFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "61",
+      "Title": "MAGNETOS Switch",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "62",
+      "Title": "MASTER Switch",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "63",
+      "Title": "Control Lock",
+      "Description": "INSTALL.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "64",
+      "Title": "Fuel Selector",
+      "Description": "LEFT or RIGHT.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    }
+  ]
+}
