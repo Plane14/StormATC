@@ -1,3 +1,5 @@
+using StormATC.Domain.State;
+
 namespace StormATC.Domain.Autofly;
 
 /// <summary>
@@ -37,9 +39,38 @@ public sealed record AircraftAutoflyProfile
     public IReadOnlyDictionary<int, string> FlapEvents { get; init; } =
         new Dictionary<int, string>();
 
+    /// <summary>
+    /// Ordered event names fired together for one binding, for controls that need a
+    /// sequence (for example magnetos then starter). When a binding has a sequence the
+    /// single <see cref="Events"/> entry is ignored.
+    /// </summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> EventSequences { get; init; } =
+        new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Scale applied to <see cref="ControlTargets.TargetFlapIndex"/> before sending it as the
+    /// event payload of the <c>flaps</c> binding, for aircraft with continuous flap events such
+    /// as MSFS <c>FLAPS_CONTINUOUS_SET</c> (0–16383). Null when detent events cover every
+    /// position or the aircraft has no flap control.
+    /// </summary>
+    public double? FlapValueScale { get; init; }
+
+    /// <summary>
+    /// Scale applied to <see cref="ControlTargets.ThrottlePercent"/> before sending it as the
+    /// event payload of the <c>throttle</c> binding. MSFS throttle events take 0–16383, so a
+    /// percent target needs a scale of about 163.83; the default 1 passes the value through.
+    /// </summary>
+    public double ThrottleScale { get; init; } = 1.0;
+
     /// <summary>Looks up an event binding by name.</summary>
     public string? EventFor(string binding) =>
         Events.TryGetValue(binding, out string? value) && value.Length > 0 ? value : null;
+
+    /// <summary>Looks up an ordered event sequence by binding name.</summary>
+    public IReadOnlyList<string>? SequenceFor(string binding) =>
+        EventSequences.TryGetValue(binding, out IReadOnlyList<string>? value) && value.Count > 0
+            ? value
+            : null;
 }
 
 /// <summary>Performance figures for one airframe.</summary>

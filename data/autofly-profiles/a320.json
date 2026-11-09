@@ -23,16 +23,34 @@
     "descentRateFpm": 1500
   },
   "events": {
-    "engage": "K:AUTOFLIGHT_AP_ON",
-    "disengage": "K:AUTOFLIGHT_AP_OFF",
-    "heading": "K:HEADING_HOLD",
-    "headingMode": "K:HEADING_HOLD",
-    "altitude": "K:ALT_HOLD",
-    "altitudeMode": "K:ALT_HOLD",
-    "verticalSpeed": "K:V_S_FPA",
-    "vsMode": "K:V_S_FPA",
-    "speed": "K:SPD_HOLD",
-    "speedMode": "K:SPD_HOLD"
+    "engage": "AUTOPILOT_ON",
+    "disengage": "AUTOPILOT_OFF",
+    "heading": "HEADING_BUG_SET",
+    "headingMode": "AP_HDG_HOLD_ON",
+    "altitude": "AP_ALT_VAR_SET_ENGLISH",
+    "altitudeMode": "AP_ALT_HOLD_ON",
+    "verticalSpeed": "AP_VS_VAR_SET_ENGLISH",
+    "vsMode": "AP_VS_ON",
+    "speed": "AP_SPD_VAR_SET",
+    "speedMode": "AP_AIRSPEED_ON",
+    "approach": "AP_APR_HOLD_ON",
+    "gearUp": "GEAR_UP",
+    "gearDown": "GEAR_DOWN",
+    "parkingBrakeOn": "PARKING_BRAKES_ON",
+    "parkingBrakeOff": "PARKING_BRAKES_OFF",
+    "throttle": "THROTTLE_SET",
+    "landingLightsOn": "LANDING_LIGHTS_ON",
+    "landingLightsOff": "LANDING_LIGHTS_OFF",
+    "taxiLightsOn": "TAXI_LIGHTS_ON",
+    "taxiLightsOff": "TAXI_LIGHTS_OFF",
+    "beaconOn": "BEACON_LIGHTS_ON",
+    "beaconOff": "BEACON_LIGHTS_OFF",
+    "flaps": "FLAPS_CONTINUOUS_SET"
   },
-  "flapEvents": {}
+  "eventSequences": {
+    "enginesStart": [ "ENGINE_MASTER_SET", "SET_STARTER1_HELD", "SET_STARTER2_HELD" ],
+    "enginesStop": [ "ENGINE_MASTER_SET" ]
+  },
+  "throttleScale": 163.83,
+  "flapValueScale": 4095.75
 }

@@ -365,6 +365,18 @@ public sealed class AutopilotActuatorService : IAutopilotActuator, IDisposable
                     ct).ConfigureAwait(false);
             }
         }
+
+        if (targets.Mode == AutopilotMode.ApproachHold)
+        {
+            await SendOnceAsync(
+                "approachMode",
+                () => new AutopilotCommand
+                {
+                    Kind = AutopilotCommandKind.TriggerEvent,
+                    EventName = profile.EventFor("approach"),
+                },
+                ct).ConfigureAwait(false);
+        }
     }
 
     private async Task ApplyConfigurationAsync(
@@ -391,8 +403,20 @@ public sealed class AutopilotActuatorService : IAutopilotActuator, IDisposable
         {
             string? binding = profile.FlapEvents.TryGetValue(flap, out string? flapEvent)
                 ? flapEvent
-                : $"STORMATC_FLAPS_{flap}";
-            await SendEventAsync($"flaps:{flap}", binding, ct).ConfigureAwait(false);
+                : profile.FlapValueScale is double flapScale && profile.EventFor("flaps") is string flapEventName
+                    ? flapEventName
+                    : $"STORMATC_FLAPS_{flap}";
+
+            double? flapValue = flapScaleOrDefault(profile, flap);
+            await SendOnceAsync(
+                $"flaps:{flap}",
+                () => new AutopilotCommand
+                {
+                    Kind = AutopilotCommandKind.TriggerEvent,
+                    EventName = binding,
+                    EventValue = flapValue,
+                },
+                ct).ConfigureAwait(false);
         }
 
         if (targets.ParkingBrakeSet is bool brake)
@@ -403,12 +427,54 @@ public sealed class AutopilotActuatorService : IAutopilotActuator, IDisposable
             await SendEventAsync($"parkingBrake:{brake}", binding, ct).ConfigureAwait(false);
         }
 
+        if (targets.LandingLightsOn is bool landingLights)
+        {
+            string binding = landingLights
+                ? profile.EventFor("landingLightsOn") ?? "STORMATC_LANDING_LIGHTS_ON"
+                : profile.EventFor("landingLightsOff") ?? "STORMATC_LANDING_LIGHTS_OFF";
+            await SendEventAsync($"landingLights:{landingLights}", binding, ct).ConfigureAwait(false);
+        }
+
+        if (targets.TaxiLightsOn is bool taxiLights)
+        {
+            string binding = taxiLights
+                ? profile.EventFor("taxiLightsOn") ?? "STORMATC_TAXI_LIGHTS_ON"
+                : profile.EventFor("taxiLightsOff") ?? "STORMATC_TAXI_LIGHTS_OFF";
+            await SendEventAsync($"taxiLights:{taxiLights}", binding, ct).ConfigureAwait(false);
+        }
+
+        if (targets.BeaconOn is bool beacon)
+        {
+            string binding = beacon
+                ? profile.EventFor("beaconOn") ?? "STORMATC_BEACON_ON"
+                : profile.EventFor("beaconOff") ?? "STORMATC_BEACON_OFF";
+            await SendEventAsync($"beacon:{beacon}", binding, ct).ConfigureAwait(false);
+        }
+
         if (targets.EnginesRunning is bool engines)
         {
-            string binding = engines
-                ? profile.EventFor("enginesStart") ?? "STORMATC_ENGINES_START"
-                : profile.EventFor("enginesStop") ?? "STORMATC_ENGINES_STOP";
-            await SendEventAsync($"engines:{engines}", binding, ct).ConfigureAwait(false);
+            // Some aircraft need a sequence (mags, then starter). Sequences win over the
+            // single-event binding; a 1/0 payload covers bool-style events such as
+            // STARTER1_SET while ignorable parameters on the other events are harmless.
+            IReadOnlyList<string>? sequence = profile.SequenceFor(engines ? "enginesStart" : "enginesStop");
+            if (sequence is not null)
+            {
+                foreach (string eventName in sequence)
+                {
+                    await SendEventAsync(
+                        $"engines:{engines}:{eventName}",
+                        eventName,
+                        engines ? 1 : 0,
+                        ct).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                string binding = engines
+                    ? profile.EventFor("enginesStart") ?? "STORMATC_ENGINES_START"
+                    : profile.EventFor("enginesStop") ?? "STORMATC_ENGINES_STOP";
+                await SendEventAsync($"engines:{engines}", binding, engines ? 1 : 0, ct).ConfigureAwait(false);
+            }
         }
 
         if (targets.PushbackRequested)
@@ -422,19 +488,32 @@ public sealed class AutopilotActuatorService : IAutopilotActuator, IDisposable
 
         if (targets.ThrottlePercent is double throttle)
         {
+            double scaled = throttle * profile.ThrottleScale;
             await SendOnceAsync(
-                $"throttle:{Math.Round(throttle)}",
+                $"throttle:{Math.Round(scaled)}",
                 () => new AutopilotCommand
                 {
                     Kind = AutopilotCommandKind.TriggerEvent,
                     EventName = profile.EventFor("throttle") ?? "STORMATC_THROTTLE",
-                    EventValue = throttle,
+                    EventValue = scaled,
                 },
                 ct).ConfigureAwait(false);
         }
     }
 
-    private async Task SendEventAsync(string key, string? eventName, CancellationToken ct)
+    private static double? flapScaleOrDefault(AircraftAutoflyProfile profile, int flap) =>
+        profile.FlapEvents.ContainsKey(flap)
+            ? null
+            : profile.FlapValueScale is double scale ? flap * scale : null;
+
+    private async Task SendEventAsync(string key, string? eventName, CancellationToken ct) =>
+        await SendEventAsync(key, eventName, null, ct).ConfigureAwait(false);
+
+    private async Task SendEventAsync(
+        string key,
+        string? eventName,
+        double? value,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(eventName))
         {
@@ -447,6 +526,7 @@ public sealed class AutopilotActuatorService : IAutopilotActuator, IDisposable
             {
                 Kind = AutopilotCommandKind.TriggerEvent,
                 EventName = eventName,
+                EventValue = value,
             },
             ct).ConfigureAwait(false);
     }

@@ -329,20 +329,36 @@ public sealed class MockSimulatorConnector(
         MockAircraftModel model,
         AutopilotCommand command)
     {
-        // The mock recognises StormATC's canonical fallback event names so autofly
-        // configuration commands are visible in mock state even without an aircraft profile.
+        // The mock recognises StormATC's canonical fallback names plus the official
+        // MSFS 2024 event names used by the bundled autofly profiles, so autofly
+        // configuration commands are visible in mock state without an aircraft profile.
         return command.EventName switch
         {
-            "STORMATC_GEAR_DOWN" => model with { GearHandleDown = true },
-            "STORMATC_GEAR_UP" => model with { GearHandleDown = false },
-            "STORMATC_PARKING_BRAKE_ON" => model with { ParkingBrakeSet = true },
-            "STORMATC_PARKING_BRAKE_OFF" => model with { ParkingBrakeSet = false },
+            "STORMATC_GEAR_DOWN" or "GEAR_DOWN" => model with { GearHandleDown = true },
+            "STORMATC_GEAR_UP" or "GEAR_UP" => model with { GearHandleDown = false },
+            "STORMATC_PARKING_BRAKE_ON" or "PARKING_BRAKES_ON" =>
+                model with { ParkingBrakeSet = true },
+            "STORMATC_PARKING_BRAKE_OFF" or "PARKING_BRAKES_OFF" =>
+                model with { ParkingBrakeSet = false },
+            "PARKING_BRAKE_SET" when command.EventValue is > 0 =>
+                model with { ParkingBrakeSet = true },
+            "PARKING_BRAKE_SET" => model with { ParkingBrakeSet = false },
             "STORMATC_ENGINES_START" => model with { EnginesRunning = true },
-            "STORMATC_ENGINES_STOP" => model with { EnginesRunning = false },
+            "STARTER1_SET" or "ENGINE_MASTER_SET" or "MAGNETO_BOTH" when command.EventValue is > 0 =>
+                model with { EnginesRunning = true },
+            "STORMATC_ENGINES_STOP" or "MAGNETO_OFF" => model with { EnginesRunning = false },
+            "ENGINE_MASTER_SET" when command.EventValue is <= 0 => model with { EnginesRunning = false },
             "STORMATC_PUSHBACK" => model.Stage == MockFlightStage.AtStand
                 ? model.TransitionTo(MockFlightStage.PushedBack)
                 : model,
-            "STORMATC_THROTTLE" => model,
+            "STORMATC_THROTTLE" or "THROTTLE_SET" => model,
+            "FLAPS_UP" => model with { FlapsHandleIndex = 0 },
+            "FLAPS_DOWN" => model with { FlapsHandleIndex = 4 },
+            "FLAPS_1" => model with { FlapsHandleIndex = 1 },
+            "FLAPS_2" => model with { FlapsHandleIndex = 2 },
+            "FLAPS_3" => model with { FlapsHandleIndex = 3 },
+            "FLAPS_CONTINUOUS_SET" when command.EventValue is double flapValue =>
+                model with { FlapsHandleIndex = (int)Math.Round(flapValue / 4095.75) },
             var name when name is not null && name.StartsWith("STORMATC_FLAPS_", StringComparison.Ordinal)
                 && int.TryParse(name["STORMATC_FLAPS_".Length..], out int detent)
                 => model with { FlapsHandleIndex = detent },

@@ -23,9 +23,11 @@ public sealed class AutoflyActuatorTests : IAsyncLifetime, IDisposable
         NullLogger<MockSimulatorConnector>.Instance,
         new TestClock());
 
-    private AutopilotActuatorService CreateActuator(bool enabled = true) => new(
+    private AutopilotActuatorService CreateActuator(
+        bool enabled = true,
+        AircraftAutoflyProfile? profile = null) => new(
         _simulator,
-        new StubProfileProvider(),
+        new StubProfileProvider(profile),
         Options.Create(new AutoflyOptions { Enabled = enabled }),
         NullLogger<AutopilotActuatorService>.Instance);
 
@@ -154,6 +156,99 @@ public sealed class AutoflyActuatorTests : IAsyncLifetime, IDisposable
         Assert.Contains("stale", actuator.StatusMessage, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task OfficialEventBindingsDriveConfiguration()
+    {
+        AircraftAutoflyProfile profile = new()
+        {
+            Name = "Official bindings",
+            CanAutofly = true,
+            ThrottleScale = 163.83,
+            Events = new Dictionary<string, string>
+            {
+                ["engage"] = "AUTOPILOT_ON",
+                ["gearDown"] = "GEAR_DOWN",
+                ["gearUp"] = "GEAR_UP",
+                ["parkingBrakeOn"] = "PARKING_BRAKES_ON",
+                ["parkingBrakeOff"] = "PARKING_BRAKES_OFF",
+                ["landingLightsOn"] = "LANDING_LIGHTS_ON",
+                ["landingLightsOff"] = "LANDING_LIGHTS_OFF",
+                ["throttle"] = "THROTTLE_SET",
+                ["approach"] = "AP_APR_HOLD_ON",
+            },
+            FlapEvents = new Dictionary<int, string> { [2] = "FLAPS_2" },
+            EventSequences = new Dictionary<string, IReadOnlyList<string>>
+            {
+                ["enginesStart"] = ["MAGNETO_BOTH", "STARTER1_SET"],
+                ["enginesStop"] = ["MAGNETO_OFF"],
+            },
+        };
+        AutopilotActuatorService actuator = CreateActuator(profile: profile);
+
+        ControlTargets targets = Targets() with
+        {
+            Mode = AutopilotMode.ApproachHold,
+            EnginesRunning = true,
+            ParkingBrakeSet = false,
+            GearDown = false,
+            TargetFlapIndex = 2,
+            ThrottlePercent = 50,
+            LandingLightsOn = true,
+            TargetHeadingDegrees = 180,
+        };
+
+        await actuator.UpdateAsync(targets, FlightPhase.Approach, State(), CancellationToken.None);
+
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "AUTOPILOT_ON");
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "GEAR_UP");
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "PARKING_BRAKES_OFF");
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "LANDING_LIGHTS_ON");
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "FLAPS_2");
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "MAGNETO_BOTH" && c.EventValue == 1);
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "STARTER1_SET" && c.EventValue == 1);
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "THROTTLE_SET"
+                && c.EventValue is double throttle && Math.Abs(throttle - 8191.5) < 0.01);
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "AP_APR_HOLD_ON");
+
+        AircraftState state = _simulator.GetCurrentState();
+        Assert.True(state.EnginesRunning);
+        Assert.False(state.ParkingBrakeSet);
+        Assert.False(state.GearHandleDown);
+        Assert.Equal(2, state.FlapsHandleIndex);
+    }
+
+    [Fact]
+    public async Task ContinuousFlapScaleMapsDetentToEventValue()
+    {
+        AircraftAutoflyProfile profile = new()
+        {
+            Name = "Continuous flaps",
+            CanAutofly = true,
+            FlapValueScale = 4095.75,
+            Events = new Dictionary<string, string> { ["flaps"] = "FLAPS_CONTINUOUS_SET" },
+        };
+        AutopilotActuatorService actuator = CreateActuator(profile: profile);
+
+        await actuator.UpdateAsync(
+            Targets() with { Mode = AutopilotMode.Disengaged, TargetFlapIndex = 3 },
+            FlightPhase.Takeoff,
+            State(),
+            CancellationToken.None);
+
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.EventName == "FLAPS_CONTINUOUS_SET" && c.EventValue == 12287.25);
+        Assert.Equal(3, _simulator.GetCurrentState().FlapsHandleIndex);
+    }
+
     private static ControlTargets Targets() => new()
     {
         Mode = AutopilotMode.HeadingHold,
@@ -166,12 +261,13 @@ public sealed class AutoflyActuatorTests : IAsyncLifetime, IDisposable
         AutopilotEngaged = true,
     };
 
-    private sealed class StubProfileProvider : IAircraftAutoflyProfileProvider
+    private sealed class StubProfileProvider(AircraftAutoflyProfile? profile = null)
+        : IAircraftAutoflyProfileProvider
     {
         public Task<AircraftAutoflyProfile> GetProfileAsync(
             AircraftState aircraftState,
             CancellationToken ct = default) =>
-            Task.FromResult(new AircraftAutoflyProfile
+            Task.FromResult(profile ?? new AircraftAutoflyProfile
             {
                 Name = "Mock profile",
                 CanAutofly = true,

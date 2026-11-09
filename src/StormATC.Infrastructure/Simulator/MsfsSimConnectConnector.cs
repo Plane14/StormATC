@@ -1195,7 +1195,19 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
             };
         }
 
-        int clientEventId = EnsureControlEventMapped(eventName.Trim());
+        // Profiles may carry the documentation's "K:"/"KEY_" key-event prefixes; SimConnect
+        // event names are the bare identifiers (e.g. AP_MASTER, HEADING_BUG_SET).
+        string simEventName = eventName.Trim();
+        if (simEventName.StartsWith("K:", StringComparison.OrdinalIgnoreCase))
+        {
+            simEventName = simEventName[2..];
+        }
+        else if (simEventName.StartsWith("KEY_", StringComparison.OrdinalIgnoreCase))
+        {
+            simEventName = simEventName[4..];
+        }
+
+        int clientEventId = EnsureControlEventMapped(simEventName);
         uint eventData = command.EventValue is double value && double.IsFinite(value)
             ? checked((uint)Math.Clamp(Math.Round(value), 0, uint.MaxValue))
             : 0;

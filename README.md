@@ -77,8 +77,9 @@ See [docs/architecture.md](docs/architecture.md).
   plus VFR clearances (squawk 1200, no SID/STAR required)
 - **User-aircraft autofly** (opt-in): follows published airport geometry through startup,
   pushback, taxi-out, line-up, takeoff, climb, cruise, descent, approach, rollout, taxi-in,
-  parking, and shutdown — using per-aircraft performance profiles and SimConnect event
-  bindings, never fighting a manual disconnect
+  parking, and shutdown — using per-aircraft performance profiles and official MSFS 2024
+  SimConnect key-event bindings (`AP_*`, `HEADING_BUG_SET`, `GEAR_*`, `FLAPS_*`, lights,
+  engines), never fighting a manual disconnect
 - **Checklist automation**: bundled per-aircraft checklists (Preflight through Shutdown) run
   alongside autofly, firing configured SimConnect events and ticking steps in order
 - **Optional continuous flights**: pick a range band and StormATC plans the next leg after
