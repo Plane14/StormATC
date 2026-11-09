@@ -14,6 +14,7 @@ public sealed class ChecklistService : IChecklistService
 {
     private readonly IChecklistRepository _repository;
     private readonly ILogger<ChecklistService> _logger;
+    private readonly object _sync = new();
     private readonly Dictionary<string, ChecklistExecutionState> _executions = new(StringComparer.Ordinal);
 
     /// <summary>Creates a checklist service.</summary>
@@ -23,27 +24,45 @@ public sealed class ChecklistService : IChecklistService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    /// <summary>Executes a checklist step.</summary>
-    public Task ExecuteStepAsync(string stepId, CancellationToken ct = default)
+    /// <summary>Marks a step complete within a specific execution.</summary>
+    public Task<bool> ExecuteStepAsync(string executionId, string stepId, CancellationToken ct = default)
     {
-        _logger.LogInformation("Executing checklist step: {StepId}", stepId);
+        ct.ThrowIfCancellationRequested();
 
-        foreach (var execution in _executions.Values)
+        lock (_sync)
         {
-            if (execution.CurrentStep?.Id == stepId && !execution.CompletedSteps.Contains(stepId))
+            if (!_executions.TryGetValue(executionId, out ChecklistExecutionState? state)
+                || state.IsCompleted)
             {
-                execution.CompletedSteps.Add(stepId);
-                _logger.LogInformation("Step {StepId} marked complete in checklist {ChecklistId}", stepId, execution.ChecklistId);
-                break;
+                return Task.FromResult(false);
             }
-        }
 
-        return Task.CompletedTask;
+            ChecklistStep? current = state.CurrentStep;
+            if (current is null || !string.Equals(current.Id, stepId, StringComparison.Ordinal))
+            {
+                return Task.FromResult(false);
+            }
+
+            if (state.CompletedSteps.Add(stepId))
+            {
+                _logger.LogInformation(
+                    "Step {StepId} marked complete in checklist {ChecklistId} (execution {ExecutionId})",
+                    stepId, state.ChecklistId, executionId);
+            }
+
+            return Task.FromResult(true);
+        }
     }
 
     /// <summary>Starts executing a checklist definition.</summary>
     public string StartChecklist(ChecklistDefinition definition)
     {
+        ArgumentNullException.ThrowIfNull(definition);
+        if (definition.Steps.Count == 0)
+        {
+            throw new ArgumentException("Cannot start a checklist with no steps.", nameof(definition));
+        }
+
         var executionId = Guid.NewGuid().ToString("N");
         var state = new ChecklistExecutionState
         {
@@ -56,8 +75,13 @@ public sealed class ChecklistService : IChecklistService
             StartTime = DateTimeOffset.UtcNow,
         };
 
-        _executions[executionId] = state;
-        _logger.LogInformation("Started checklist {ChecklistId} (execution {ExecutionId})", definition.Id, executionId);
+        lock (_sync)
+        {
+            _executions[executionId] = state;
+        }
+
+        _logger.LogInformation(
+            "Started checklist {ChecklistId} (execution {ExecutionId})", definition.Id, executionId);
 
         return executionId;
     }
@@ -65,42 +89,72 @@ public sealed class ChecklistService : IChecklistService
     /// <summary>Gets the current step of an execution.</summary>
     public ChecklistStep? GetCurrentStep(string executionId)
     {
-        if (_executions.TryGetValue(executionId, out var state))
+        lock (_sync)
         {
-            if (state.CurrentStepIndex >= 0 && state.CurrentStepIndex < state.Steps.Count)
-            {
-                return state.Steps[state.CurrentStepIndex];
-            }
+            return _executions.TryGetValue(executionId, out ChecklistExecutionState? state)
+                ? state.CurrentStep
+                : null;
         }
-        return null;
     }
 
     /// <summary>Advances to the next step.</summary>
     public bool AdvanceStep(string executionId)
     {
-        if (!_executions.TryGetValue(executionId, out var state))
+        lock (_sync)
         {
-            return false;
-        }
+            if (!_executions.TryGetValue(executionId, out ChecklistExecutionState? state)
+                || state.IsCompleted)
+            {
+                return false;
+            }
 
-        var current = state.Steps[state.CurrentStepIndex];
-        if (!current.IsOptional && !state.CompletedSteps.Contains(current.Id))
+            ChecklistStep? current = state.CurrentStep;
+            if (current is null)
+            {
+                state.CompletedAt ??= DateTimeOffset.UtcNow;
+                return false;
+            }
+
+            if (!current.IsOptional && !state.CompletedSteps.Contains(current.Id))
+            {
+                return false; // Cannot skip a required incomplete step
+            }
+
+            // Optional steps that were skipped still count toward completion.
+            if (current.IsOptional)
+            {
+                state.CompletedSteps.Add(current.Id);
+            }
+
+            state.CurrentStepIndex++;
+            if (state.CurrentStepIndex >= state.Steps.Count)
+            {
+                state.CompletedAt = DateTimeOffset.UtcNow;
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>Gets the full state of an execution.</summary>
+    public ChecklistExecutionState? GetExecutionState(string executionId)
+    {
+        lock (_sync)
         {
-            return false; // Cannot skip a required incomplete step
+            return _executions.TryGetValue(executionId, out ChecklistExecutionState? state)
+                ? state
+                : null;
         }
-
-        state.CurrentStepIndex++;
-        if (state.CurrentStepIndex >= state.Steps.Count)
-        {
-            state.CompletedAt = DateTimeOffset.UtcNow;
-        }
-
-        return true;
     }
 
     /// <summary>Gets all active executions.</summary>
-    public IReadOnlyList<ChecklistExecutionState> GetActiveExecutions() =>
-        _executions.Values.ToList().AsReadOnly();
+    public IReadOnlyList<ChecklistExecutionState> GetActiveExecutions()
+    {
+        lock (_sync)
+        {
+            return _executions.Values.Where(s => !s.IsCompleted).ToList().AsReadOnly();
+        }
+    }
 }
 
 /// <summary>Tracks the execution state of a checklist.</summary>

@@ -39,7 +39,7 @@ public sealed record SimVarBinding
     public object ExpectedValue { get; init; } = string.Empty;
 
     /// <summary>Tolerance for comparison.</summary>
-    public double Tolerance { get; init; } = 0.0;
+    public double Tolerance { get; init; }
 }
 
 /// <summary>A binding to a SimConnect event for executing a step.</summary>

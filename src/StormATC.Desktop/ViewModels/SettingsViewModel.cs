@@ -52,6 +52,8 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
     /// between a setting that was changed and one that merely happens to be on.
     /// </summary>
     private readonly bool _offlineModeAtStartup;
+    private readonly bool _enableAICopilotFeaturesAtStartup;
+    private readonly string _checklistDirectoryAtStartup;
 
     [ObservableProperty]
     private bool _hasOpenRouterKey;
@@ -379,6 +381,8 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
             ?? PushbackDirections.TailLeft;
         _offlineMode = applicationOptions.Value.OfflineMode;
         _offlineModeAtStartup = _offlineMode;
+        _enableAICopilotFeaturesAtStartup = applicationOptions.Value.EnableAICopilotFeatures;
+        _checklistDirectoryAtStartup = checklistOptions.Value.ChecklistDirectory;
         _cloudServicesConsentGiven = applicationOptions.Value.CloudServicesConsentGiven;
         _preferredConnector = SimulatorConnectorNames.Normalize(simulatorOptions.Value.PreferredConnector);
         _simulatorStatus = _simulatorConnector.StatusMessage;
@@ -1176,6 +1180,13 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
         {
             JoystickButtonBinding? joystickBinding = _joystickInput.CurrentBinding;
 
+            string? validationError = ValidateAICopilotSettings();
+            if (validationError is not null)
+            {
+                StatusMessage = validationError;
+                return;
+            }
+
             await _userSettings.SaveManyAsync(
                 [
                     (ApplicationOptions.SectionName, "OfflineMode", JsonValue.Create(OfflineMode)),
@@ -1253,8 +1264,8 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
                     (TerrainOptions.SectionName, "InFlightGridWidthPoints", JsonValue.Create(InFlightGridWidthPoints)),
                     (TerrainOptions.SectionName, "InFlightGridHeightPoints", JsonValue.Create(InFlightGridHeightPoints)),
                     (TerrainOptions.SectionName, "InFlightLookAheadNm", JsonValue.Create(InFlightLookAheadNm)),
-                    (TerrainOptions.SectionName, "InFlightUpdateInterval", JsonValue.Create(
-                        JsonSerializer.SerializeToNode(TimeSpan.FromSeconds(InFlightUpdateIntervalSeconds).TotalSeconds))),
+                    (TerrainOptions.SectionName, "InFlightUpdateInterval",
+                        JsonSerializer.SerializeToNode(TimeSpan.FromSeconds(InFlightUpdateIntervalSeconds))),
                     (ContinuousFlightOptions.SectionName, "MinRangeNm", JsonValue.Create(MinRangeNm)),
                     (ContinuousFlightOptions.SectionName, "MaxRangeNm", JsonValue.Create(MaxRangeNm)),
                     (ContinuousFlightOptions.SectionName, "ServiceTimeMinutes", JsonValue.Create(ServiceTimeMinutes)),
@@ -1292,8 +1303,11 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
             RefreshTrafficIntegrationStatus();
 
             // Offline mode decides which implementations are registered, which happens once when
-            // the host is built. It is the only setting on this page that still needs a restart.
-            RestartRequired = OfflineMode != _offlineModeAtStartup;
+            // the host is built. AI Copilot page registration and the checklist directory are
+            // also captured at startup, so those need a restart as well.
+            RestartRequired = OfflineMode != _offlineModeAtStartup
+                || EnableAICopilotFeatures != _enableAICopilotFeaturesAtStartup
+                || !string.Equals(ChecklistDirectory, _checklistDirectoryAtStartup, StringComparison.Ordinal);
 
             StatusMessage = RestartRequired
                 ? $"Saved to {SettingsFilePath}. Offline mode takes effect after a restart."
@@ -1304,6 +1318,41 @@ public sealed partial class SettingsViewModel : ObservableObject, IRefreshablePa
             _logger.LogError(ex, "Saving settings failed.");
             StatusMessage = "The settings could not be saved.";
         }
+    }
+
+    /// <summary>
+    /// Validates the AI Copilot values before they are written, so an out-of-range entry cannot
+    /// be saved and then fail option validation on the next launch.
+    /// </summary>
+    private string? ValidateAICopilotSettings()
+    {
+        if (DefaultCruiseSpeedKt is < 1 or > 900
+            || DefaultClimbRateFpm is < 1 or > 9000
+            || DefaultDescentRateFpm is < 1 or > 9000)
+        {
+            return "Flight defaults are outside their allowed ranges.";
+        }
+
+        if (PreFlightSampleSpacingNm is < 1 or > 50
+            || InFlightGridWidthPoints is < 1 or > 100
+            || InFlightGridHeightPoints is < 1 or > 100
+            || InFlightLookAheadNm is < 1 or > 100
+            || InFlightUpdateIntervalSeconds is < 1 or > 3600)
+        {
+            return "Terrain settings are outside their allowed ranges.";
+        }
+
+        if (MinRangeNm is < 1 or > 5000
+            || MaxRangeNm is < 1 or > 5000
+            || MinRangeNm > MaxRangeNm
+            || ServiceTimeMinutes is < 1 or > 480
+            || ReserveFactor is < 0 or > 1)
+        {
+            return "Continuous-flight settings are outside their allowed ranges.";
+        }
+
+        // An empty checklist directory is valid: it selects the bundled flightchecklists folder.
+        return null;
     }
 
     /// <summary>Deletes every locally stored session, transcript, and decision.</summary>

@@ -39,7 +39,7 @@ public sealed class MsfsTerrainProvider : ITerrainProvider
         CancellationToken ct = default)
     {
         _logger.LogDebug(
-            "Requesting ground grid ({0}x{1}, spacing {2} NM) from MSFS SimConnect.",
+            "Requesting ground grid ({Width}x{Height}, spacing {Spacing} NM) from MSFS SimConnect.",
             widthPoints, heightPoints, spacingNm);
 #if MSFS_SDK_AVAILABLE
         // Real SimConnect integration would go here

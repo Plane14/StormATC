@@ -522,7 +522,6 @@ public sealed class TerrainOptions
     public double InFlightLookAheadNm { get; init; } = 15.0;
 
     /// <summary>In-flight terrain update interval.</summary>
-    [Range(100, 3600000)]
     public TimeSpan InFlightUpdateInterval { get; init; } = TimeSpan.FromSeconds(30);
 }
 
@@ -556,6 +555,6 @@ public sealed class ChecklistOptions
     /// <summary>When true, checklist system is enabled.</summary>
     public bool Enabled { get; init; } = true;
 
-    /// <summary>Directory containing checklist definition files.</summary>
-    public string ChecklistDirectory { get; init; } = "flightchecklists";
+    /// <summary>Directory containing checklist definition files. Empty uses the bundled flightchecklists folder.</summary>
+    public string ChecklistDirectory { get; init; } = string.Empty;
 }

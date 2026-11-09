@@ -1,5 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormATC.Application.Abstractions;
@@ -8,88 +14,146 @@ using StormATC.Domain.Checklists;
 
 namespace StormATC.Infrastructure.Checklists;
 
-/// <summary>Loads and saves checklist definitions from JSON files in the checklist directory.</summary>
+/// <summary>JSON file-backed checklist repository with <see cref="ChecklistOptions.ChecklistDirectory"/> override.</summary>
+/// <remarks>
+/// Definitions are read from the app-data checklist directory when configured, otherwise from the
+/// bundled <c>flightchecklists</c> folder shipped next to the executable (copied to output and to
+/// the installer payload). An explicit directory that does not exist is treated as empty rather
+/// than falling back, so a typo cannot silently load the wrong set.
+/// </remarks>
 public sealed class JsonChecklistRepository : IChecklistRepository
 {
-    private readonly IStoragePaths _storagePaths;
-    private readonly ChecklistOptions _options;
-    private readonly ILogger<JsonChecklistRepository> _logger;
-
-    private static readonly JsonSerializerOptions _jsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
-        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() },
     };
+
+    private readonly string _directory;
+    private readonly bool _enabled;
+    private readonly ILogger<JsonChecklistRepository> _logger;
 
     /// <summary>Creates a JSON checklist repository.</summary>
     public JsonChecklistRepository(
-        IStoragePaths storagePaths,
         IOptions<ChecklistOptions> options,
         ILogger<JsonChecklistRepository> logger)
     {
-        _storagePaths = storagePaths ?? throw new ArgumentNullException(nameof(storagePaths));
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        ArgumentNullException.ThrowIfNull(options);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        ChecklistOptions checklistOptions = options.Value;
+        _enabled = checklistOptions.Enabled;
+
+        string? configured = checklistOptions.ChecklistDirectory;
+        if (!string.IsNullOrWhiteSpace(configured))
+        {
+            _directory = Path.GetFullPath(configured);
+        }
+        else
+        {
+            // The csproj links data/** under a "data" folder, so prefer the packaged location
+            // and fall back to a flat folder for development layouts.
+            string packaged = Path.Combine(AppContext.BaseDirectory, "data", "flightchecklists");
+            string flat = Path.Combine(AppContext.BaseDirectory, "flightchecklists");
+            _directory = Directory.Exists(packaged) ? packaged : flat;
+        }
     }
 
-    /// <summary>Loads all checklist definitions from the configured directory.</summary>
-    public async Task<IReadOnlyList<ChecklistDefinition>> LoadAllAsync(CancellationToken ct = default)
+    /// <inheritdoc />
+    public Task<IReadOnlyList<ChecklistDefinition>> LoadAllAsync(CancellationToken ct)
     {
-        var directory = GetChecklistDirectory();
-        if (!Directory.Exists(directory))
+        if (!_enabled)
         {
-            _logger.LogDebug("Checklist directory does not exist: {Directory}", directory);
-            return [];
+            return Task.FromResult<IReadOnlyList<ChecklistDefinition>>(Array.Empty<ChecklistDefinition>());
         }
 
-        var definitions = new List<ChecklistDefinition>();
-        foreach (var file in Directory.EnumerateFiles(directory, "*.json", SearchOption.TopDirectoryOnly))
+        var checklists = new List<ChecklistDefinition>();
+        if (!Directory.Exists(_directory))
         {
+            return Task.FromResult<IReadOnlyList<ChecklistDefinition>>(checklists);
+        }
+
+        foreach (string file in Directory.EnumerateFiles(_directory, "*.json"))
+        {
+            ct.ThrowIfCancellationRequested();
+
+            string fileName = Path.GetFileName(file);
+            if (string.Equals(fileName, "index.json", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             try
             {
-                var json = await File.ReadAllTextAsync(file, ct);
-                var definition = JsonSerializer.Deserialize<ChecklistDefinition>(json, _jsonOptions);
-                if (definition is not null)
+                ChecklistDefinition? checklist = LoadFile(file);
+                if (checklist is not null)
                 {
-                    definitions.Add(definition);
+                    checklists.Add(checklist);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to load checklist definition from {File}", file);
+                _logger.LogWarning(ex, "Failed to load checklist file '{File}'.", fileName);
             }
         }
 
-        return definitions;
+        return Task.FromResult<IReadOnlyList<ChecklistDefinition>>(checklists);
     }
 
-    /// <summary>Loads a checklist definition by ID.</summary>
-    public async Task<ChecklistDefinition?> LoadByIdAsync(string id, CancellationToken ct = default)
+    /// <inheritdoc />
+    public Task<ChecklistDefinition?> LoadByIdAsync(string id, CancellationToken ct)
     {
-        var directory = GetChecklistDirectory();
-        if (!Directory.Exists(directory))
+        ct.ThrowIfCancellationRequested();
+
+        if (!_enabled || string.IsNullOrWhiteSpace(id) || !IsSafeId(id))
         {
-            return null;
+            return Task.FromResult<ChecklistDefinition?>(null);
         }
 
-        var file = Path.Combine(directory, $"{id}.json");
+        string file = Path.Combine(_directory, id + ".json");
         if (!File.Exists(file))
         {
-            return null;
+            return Task.FromResult<ChecklistDefinition?>(null);
         }
 
         try
         {
-            var json = await File.ReadAllTextAsync(file, ct);
-            return JsonSerializer.Deserialize<ChecklistDefinition>(json, _jsonOptions);
+            return Task.FromResult(LoadFile(file));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to load checklist definition {Id}", id);
-            return null;
+            _logger.LogWarning(ex, "Failed to load checklist '{Id}'.", id);
+            return Task.FromResult<ChecklistDefinition?>(null);
         }
     }
 
-    private string GetChecklistDirectory() =>
-        Path.Combine(_storagePaths.ApplicationDataDirectory, _options.ChecklistDirectory);
+    private static bool IsSafeId(string id)
+    {
+        if (id.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+        {
+            return false;
+        }
+
+        return !id.Contains("..", StringComparison.Ordinal) && !Path.IsPathRooted(id);
+    }
+
+    private static ChecklistDefinition? LoadFile(string file)
+    {
+        using FileStream stream = File.OpenRead(file);
+        ChecklistDefinition? checklist = JsonSerializer.Deserialize<ChecklistDefinition>(stream, JsonOptions);
+        if (checklist is null || checklist.Steps.Count == 0)
+        {
+            return null;
+        }
+
+        return checklist;
+    }
 }

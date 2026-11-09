@@ -172,8 +172,11 @@ public partial class MainWindow : Window
             Key.D2 or Key.NumPad2 => 1,
             Key.D3 or Key.NumPad3 => 2,
             Key.D4 or Key.NumPad4 => 3,
-            Key.D5 or Key.NumPad5 or Key.OemComma => 4,
+            Key.D5 or Key.NumPad5 => 4,
             Key.D6 or Key.NumPad6 => 5,
+            Key.D7 or Key.NumPad7 => 6,
+            Key.D8 or Key.NumPad8 => 7,
+            Key.D9 or Key.NumPad9 => 8,
             _ => -1,
         };
 

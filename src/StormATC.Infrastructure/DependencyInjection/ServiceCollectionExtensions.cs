@@ -238,16 +238,26 @@ public static class ServiceCollectionExtensions
         services.AddOptions<TerrainOptions>()
             .Bind(configuration.GetSection(TerrainOptions.SectionName))
             .ValidateDataAnnotations()
+            .Validate(
+                options => options.InFlightUpdateInterval >= TimeSpan.FromMilliseconds(100)
+                    && options.InFlightUpdateInterval <= TimeSpan.FromHours(1),
+                "Terrain:InFlightUpdateInterval must be between 100 ms and one hour.")
             .ValidateOnStart();
 
         services.AddOptions<ContinuousFlightOptions>()
             .Bind(configuration.GetSection(ContinuousFlightOptions.SectionName))
             .ValidateDataAnnotations()
+            .Validate(
+                options => options.MinRangeNm <= options.MaxRangeNm,
+                "ContinuousFlight:MinRangeNm must not exceed MaxRangeNm.")
             .ValidateOnStart();
 
         services.AddOptions<ChecklistOptions>()
             .Bind(configuration.GetSection(ChecklistOptions.SectionName))
             .ValidateDataAnnotations()
+            .Validate(
+                options => options.ChecklistDirectory.Length <= 260,
+                "Checklist:ChecklistDirectory must be a valid path.")
             .ValidateOnStart();
     }
 

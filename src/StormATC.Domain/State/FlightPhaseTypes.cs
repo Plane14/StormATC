@@ -51,8 +51,8 @@ public sealed record PhaseEvaluationContext
     /// <summary>Current aircraft state.</summary>
     public required Domain.Aircraft.AircraftState AircraftState { get; init; }
 
-    /// <summary>Active flight plan.</summary>
-    public required Domain.FlightPlanning.FlightPlan FlightPlan { get; init; }
+    /// <summary>Active flight plan, when one is loaded.</summary>
+    public required Domain.FlightPlanning.FlightPlan? FlightPlan { get; init; }
 
     /// <summary>Departure aerodrome data.</summary>
     public required Domain.Airports.AirportData? DepartureAirport { get; init; }
@@ -74,6 +74,12 @@ public sealed record PhaseEvaluationContext
 
     /// <summary>Current time.</summary>
     public required DateTimeOffset CurrentTime { get; init; }
+
+    /// <summary>Planned descent rate in feet per minute, used for top-of-descent estimates.</summary>
+    public double DescentRateFpm { get; init; } = 1500;
+
+    /// <summary>Planned cruise speed in knots, used for top-of-descent estimates.</summary>
+    public double CruiseSpeedKnots { get; init; } = 140;
 }
 
 /// <summary>Result of a flight phase evaluation.</summary>
@@ -342,235 +348,3 @@ public sealed record TrafficAssessment
     public IReadOnlyList<TrafficSnapshot> Conflicts { get; init; } = new List<TrafficSnapshot>();
 }
 
-/// <summary>Taxi route result.</summary>
-public sealed record TaxiRoute
-{
-    /// <summary>Whether a route was found.</summary>
-    public bool Found { get; init; }
-
-    /// <summary>Node indices in the route.</summary>
-    public List<uint> Nodes { get; init; } = new();
-
-    /// <summary>Taxiway names along the route.</summary>
-    public List<string> TaxiwayNames { get; init; } = new();
-
-    /// <summary>Total length in meters.</summary>
-    public double TotalLengthMeters { get; init; }
-}
-
-/// <summary>Interface for taxi routing over the ground graph.</summary>
-public interface ITaxiRouter
-{
-    /// <summary>Finds a route to the holding point for a runway.</summary>
-    TaxiRoute? FindRouteToHoldingPoint(AirportData airport, Domain.ValueObjects.GeoPosition position, string runway);
-}
-
-/// <summary>Interface for route building.</summary>
-public interface IRouteBuilder
-{
-    /// <summary>Builds a route between two airports.</summary>
-    Domain.FlightPlanning.FlightPlan BuildRoute(string departureIcao, string destinationIcao, string departureRunway);
-}
-
-/// <summary>Interface for performance calculations.</summary>
-public interface IPerformanceCalculator
-{
-    /// <summary>Climb rate in feet per minute.</summary>
-    double ClimbRateFpm { get; }
-
-    /// <summary>Descent rate in feet per minute.</summary>
-    double DescentRateFpm { get; }
-
-    /// <summary>Cruise speed in knots.</summary>
-    double CruiseSpeed { get; }
-}
-
-/// <summary>Interface for terrain analysis.</summary>
-public interface ITerrainAnalyzer
-{
-    /// <summary>Returns required altitude ahead in feet.</summary>
-    double RequiredAltitudeAheadFt(Domain.ValueObjects.GeoPosition position, double aheadNm);
-
-    /// <summary>True when a path is blocked by terrain at current altitude.</summary>
-    bool IsPathBlocked(Domain.ValueObjects.GeoPosition position, double currentAltitudeFt, double lookAheadNm);
-}
-
-/// <summary>Airport data extended with taxi routing information.</summary>
-public sealed record AirportData
-{
-    /// <summary>ICAO identifier.</summary>
-    public string Icao { get; init; } = string.Empty;
-
-    /// <summary>Aerodrome name.</summary>
-    public string Name { get; init; } = string.Empty;
-
-    /// <summary>Reference position.</summary>
-    public Domain.ValueObjects.GeoPosition ReferencePosition { get; init; } = Domain.ValueObjects.GeoPosition.Create(0, 0);
-
-    /// <summary>Reference elevation in feet.</summary>
-    public AltitudeFeet ReferenceAltitudeFeet { get; init; } = AltitudeFeet.Invalid;
-
-    /// <summary>Magnetic variation in degrees.</summary>
-    public double MagneticVariationDegrees { get; init; }
-
-    /// <summary>Runways.</summary>
-    public IReadOnlyList<RunwayData> Runways { get; init; } = new List<RunwayData>();
-
-    /// <summary>Taxiway nodes.</summary>
-    public IReadOnlyList<TaxiwayNode> TaxiwayNodes { get; init; } = new List<TaxiwayNode>();
-
-    /// <summary>Taxiway edges.</summary>
-    public IReadOnlyList<TaxiwayEdge> TaxiwayEdges { get; init; } = new List<TaxiwayEdge>();
-
-    /// <summary>Parking spots.</summary>
-    public IReadOnlyList<ParkingSpot> ParkingSpots { get; init; } = new List<ParkingSpot>();
-
-    /// <summary>Frequencies.</summary>
-    public IReadOnlyList<FrequencyData> Frequencies { get; init; } = new List<FrequencyData>();
-
-    /// <summary>True when taxi routing data is available.</summary>
-    public bool SupportsTaxiRouting => TaxiwayNodes.Count > 0 && TaxiwayEdges.Count > 0;
-}
-
-/// <summary>Runway data.</summary>
-public sealed record RunwayData
-{
-    /// <summary>Runway index.</summary>
-    public uint Index { get; init; }
-
-    /// <summary>Position.</summary>
-    public Domain.ValueObjects.GeoPosition Position { get; init; } = Domain.ValueObjects.GeoPosition.Create(0, 0);
-
-    /// <summary>Heading in degrees.</summary>
-    public double HeadingDegrees { get; init; }
-
-    /// <summary>Length in meters.</summary>
-    public double LengthMeters { get; init; }
-
-    /// <summary>Width in meters.</summary>
-    public double WidthMeters { get; init; }
-
-    /// <summary>Surface type.</summary>
-    public int Surface { get; init; }
-
-    /// <summary>Primary runway number.</summary>
-    public int PrimaryNumber { get; init; }
-
-    /// <summary>Primary runway designator.</summary>
-    public string PrimaryDesignator { get; init; } = string.Empty;
-
-    /// <summary>Secondary runway number.</summary>
-    public int SecondaryNumber { get; init; }
-
-    /// <summary>Secondary runway designator.</summary>
-    public string SecondaryDesignator { get; init; } = string.Empty;
-}
-
-/// <summary>Taxiway node (point).</summary>
-public sealed record TaxiwayNode
-{
-    /// <summary>Node index.</summary>
-    public uint Index { get; init; }
-
-    /// <summary>Node type.</summary>
-    public int Type { get; init; }
-
-    /// <summary>Node orientation.</summary>
-    public int Orientation { get; init; }
-
-    /// <summary>X bias in meters.</summary>
-    public double BiasXMeters { get; init; }
-
-    /// <summary>Z bias in meters.</summary>
-    public double BiasZMeters { get; init; }
-
-    /// <summary>Position.</summary>
-    public Domain.ValueObjects.GeoPosition Position { get; init; } = Domain.ValueObjects.GeoPosition.Create(0, 0);
-}
-
-/// <summary>Taxiway edge (path between nodes).</summary>
-public sealed record TaxiwayEdge
-{
-    /// <summary>Edge index.</summary>
-    public uint Index { get; init; }
-
-    /// <summary>Edge type.</summary>
-    public int Type { get; init; }
-
-    /// <summary>Width in meters.</summary>
-    public double WidthMeters { get; init; }
-
-    /// <summary>Weight limit in pounds.</summary>
-    public uint WeightLimitPounds { get; init; }
-
-    /// <summary>Runway number.</summary>
-    public uint RunwayNumber { get; init; }
-
-    /// <summary>Runway designator.</summary>
-    public int RunwayDesignator { get; init; }
-
-    /// <summary>Start node index.</summary>
-    public uint StartIndex { get; init; }
-
-    /// <summary>End node index.</summary>
-    public uint EndIndex { get; init; }
-
-    /// <summary>Name index.</summary>
-    public uint NameIndex { get; init; }
-
-    /// <summary>Taxiway name.</summary>
-    public string TaxiwayName { get; init; } = string.Empty;
-}
-
-/// <summary>Parking spot.</summary>
-public sealed record ParkingSpot
-{
-    /// <summary>Spot index.</summary>
-    public uint Index { get; init; }
-
-    /// <summary>Spot type.</summary>
-    public int Type { get; init; }
-
-    /// <summary>Taxi point type.</summary>
-    public int TaxiPointType { get; init; }
-
-    /// <summary>Spot name.</summary>
-    public int Name { get; init; }
-
-    /// <summary>Spot suffix.</summary>
-    public int Suffix { get; init; }
-
-    /// <summary>Spot number.</summary>
-    public uint Number { get; init; }
-
-    /// <summary>Spot orientation.</summary>
-    public int Orientation { get; init; }
-
-    /// <summary>Spot heading in degrees.</summary>
-    public double HeadingDegrees { get; init; }
-
-    /// <summary>Spot radius in meters.</summary>
-    public double RadiusMeters { get; init; }
-
-    /// <summary>X bias in meters.</summary>
-    public double BiasXMeters { get; init; }
-
-    /// <summary>Z bias in meters.</summary>
-    public double BiasZMeters { get; init; }
-}
-
-/// <summary>Frequency data.</summary>
-public sealed record FrequencyData
-{
-    /// <summary>Frequency index.</summary>
-    public uint Index { get; init; }
-
-    /// <summary>Frequency type.</summary>
-    public int Type { get; init; }
-
-    /// <summary>Frequency in hertz.</summary>
-    public uint FrequencyHertz { get; init; }
-
-    /// <summary>Frequency in megahertz.</summary>
-    public FrequencyMhz Mhz => new(FrequencyHertz / 1_000_000.0);
-}

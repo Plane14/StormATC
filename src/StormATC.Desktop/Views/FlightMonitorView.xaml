@@ -109,13 +109,13 @@
               <StackPanel>
                 <TextBlock Text="Required Altitude Ahead"
                            Style="{StaticResource LabelTextStyle}" />
-                <TextBlock Text="-- ft"
+                <TextBlock Text="{Binding RequiredAltitudeAheadFt, StringFormat={}{0:F0} ft, TargetNullValue='-- ft'}"
                            FontSize="16"
                            FontWeight="SemiBold" />
                 <TextBlock Text="Minimum Safe Altitude"
                            Style="{StaticResource LabelTextStyle}"
                            Margin="0,8,0,0" />
-                <TextBlock Text="-- ft"
+                <TextBlock Text="{Binding MinimumSafeAltitudeFt, StringFormat={}{0:F0} ft, TargetNullValue='-- ft'}"
                            FontSize="16"
                            FontWeight="SemiBold" />
               </StackPanel>

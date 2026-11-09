@@ -90,8 +90,12 @@
                       Style="{StaticResource PrimaryButtonStyle}"
                       Margin="0,0,12,0" />
               <Button Content="Stop Mission"
-                      Command="{Binding StopMissionCommand}" />
+                      Command="{Binding StopMissionAsyncCommand}" />
             </WrapPanel>
+            <TextBlock Text="{Binding LastPlannedRoute, FallbackValue=''}"
+                       Style="{StaticResource SecondaryTextStyle}"
+                       Margin="0,8,0,0"
+                       TextWrapping="Wrap" />
             <TextBlock Text="{Binding StatusMessage}"
                        Style="{StaticResource SecondaryTextStyle}"
                        Margin="0,12,0,0" />

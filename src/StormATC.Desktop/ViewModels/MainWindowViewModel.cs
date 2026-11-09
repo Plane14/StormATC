@@ -189,7 +189,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    /// <summary>Navigates by zero-based index for the shell's Ctrl+1 through Ctrl+6 shortcuts.</summary>
+    /// <summary>Navigates by zero-based index for the shell's Ctrl+1 through Ctrl+9 shortcuts.</summary>
     public void NavigateToIndex(int index)
     {
         if (index >= 0 && index < Pages.Count)

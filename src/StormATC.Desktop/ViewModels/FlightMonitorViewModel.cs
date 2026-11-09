@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -30,6 +32,12 @@ public sealed partial class FlightMonitorViewModel : ObservableObject, IRefresha
     private double? _targetVerticalSpeedFpm;
 
     [ObservableProperty]
+    private double? _requiredAltitudeAheadFt;
+
+    [ObservableProperty]
+    private double? _minimumSafeAltitudeFt;
+
+    [ObservableProperty]
     private string _statusMessage = "Flight monitor ready.";
 
     /// <summary>Creates a flight monitor view model.</summary>
@@ -41,9 +49,43 @@ public sealed partial class FlightMonitorViewModel : ObservableObject, IRefresha
 
     /// <inheritdoc />
     [RelayCommand]
-    public Task RefreshAsync()
+    public async Task RefreshAsync()
     {
-        StatusMessage = "Flight monitor active.";
-        return Task.CompletedTask;
+        try
+        {
+            // The hosted orchestrator ticks on its own; one explicit tick keeps the monitor
+            // responsive even when the page is opened before the first interval elapses.
+            await _flightOrchestrator.TickAsync(CancellationToken.None);
+            UpdateFromServices();
+            StatusMessage = _flightOrchestrator.LastAircraftState is null
+                ? "Waiting for simulator data — phase engine has no aircraft state yet."
+                : "Flight monitor active.";
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Refresh failed: {ex.Message}";
+        }
+    }
+
+    private void UpdateFromServices()
+    {
+        CurrentPhase = _flightOrchestrator.CurrentPhase.ToString();
+
+        Domain.State.ControlTargets? targets = _autopilot.CurrentTargets;
+        AutopilotMode = targets?.Mode.ToString() ?? "Disengaged";
+        TargetAltitudeFeet = targets?.TargetAltitudeFeet?.Feet;
+        TargetHeadingDegrees = targets?.TargetHeadingDegrees;
+        TargetSpeedKnots = targets?.TargetSpeedKnots?.Knots;
+        TargetVerticalSpeedFpm = targets?.TargetVerticalSpeedFpm?.Fpm;
+
+        Domain.State.TerrainProfile? terrain = _flightOrchestrator.LastTerrainProfile;
+        RequiredAltitudeAheadFt = terrain?.MaxRequiredAltitudeFt;
+        MinimumSafeAltitudeFt = terrain?.IsFallback == true
+            ? null
+            : terrain?.MaxRequiredAltitudeFt;
     }
 }
