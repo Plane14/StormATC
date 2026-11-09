@@ -72,6 +72,12 @@ public sealed record AircraftState
     /// <summary>The currently selected flap-handle detent.</summary>
     public int FlapsHandleIndex { get; init; }
 
+    /// <summary>
+    /// True when the aircraft is a taildragger (tailwheel), determined from the simulator
+    /// title. Taildraggers need different takeoff, climb, approach, and rollout handling.
+    /// </summary>
+    public bool IsTaildragger => TaildraggerClassifier.IsTaildragger(AircraftTitle);
+
     /// <summary>COM radio state.</summary>
     public required RadioState Radio { get; init; }
 

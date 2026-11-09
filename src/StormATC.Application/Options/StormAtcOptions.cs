@@ -498,6 +498,14 @@ public sealed class FlightOptions
     /// <summary>Default descent rate in feet per minute.</summary>
     [Range(1, 9000)]
     public double DefaultDescentRateFpm { get; init; } = 1500;
+
+    /// <summary>Climb speed in knots used for taildragger aircraft.</summary>
+    [Range(30, 300)]
+    public double TaildraggerClimbSpeedKnots { get; init; } = 85;
+
+    /// <summary>Approach and descent speed in knots used for taildragger aircraft.</summary>
+    [Range(30, 300)]
+    public double TaildraggerApproachSpeedKnots { get; init; } = 75;
 }
 
 /// <summary>Terrain analysis parameters.</summary>

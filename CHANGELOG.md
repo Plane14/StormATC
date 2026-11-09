@@ -5,6 +5,30 @@ public releases.
 
 ## Unreleased
 
+## 0.1.3 - 2026-11-09
+
+### Added
+
+- All 65 Microsoft Flight Simulator 2024 aircraft checklists from flightchecklist.app are now
+  bundled and indexed: airliners, GA singles, turboprops, transports, fighters, and
+  helicopters ship as JSON definitions loaded by the Checklists page.
+- Taildragger handling in the automatic pilot: aircraft titles are classified as tailwheel or
+  tricycle gear, and taildraggers receive reduced climb and approach speeds plus a shallow
+  climb pitch target. The Flight Monitor shows the detected handling type.
+- A **Complete Step** action on the Checklists page so required steps can actually be marked
+  off before advancing.
+
+### Fixed
+
+- The bundled checklist index listed only three entries (including a nonexistent aircraft);
+  it now reflects every shipped checklist file.
+- `generate_checklists.py` wrote to a hard-coded `/workspace` path; it now targets the
+  repository's `data/flightchecklists` folder.
+- The autopilot disengaged during go-arounds because `GoAround` had no control-target branch;
+  it now produces climb targets like the other climb phases.
+- Checklists could never advance past a required step because the UI offered no way to mark
+  the current step complete.
+
 ### Added
 
 - Community governance, conduct, roadmap, support, and contributor onboarding.

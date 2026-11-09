@@ -1,10 +1,271 @@
-{
-  "total": 3,
-  "aircraft": [
-    { "slug": "cessna-172", "name": "Cessna 172 Skyhawk" },
-    { "slug": "a320-neo", "name": "Airbus A320neo" },
-    { "slug": "generic-ga", "name": "Generic GA Aircraft" }
-  ],
-  "source": "flightchecklist.app/msfs",
-  "generated": "2026-11-09"
+﻿{
+    "total":  66,
+    "aircraft":  [
+                     {
+                         "slug":  "a220",
+                         "name":  "Synaptic A220-300"
+                     },
+                     {
+                         "slug":  "a2a-comanche-250",
+                         "name":  "Piper PA-24-250 Comanche (A2A)"
+                     },
+                     {
+                         "slug":  "a320-neo",
+                         "name":  "Airbus A320neo"
+                     },
+                     {
+                         "slug":  "a32nx",
+                         "name":  "FlyByWire A32NX"
+                     },
+                     {
+                         "slug":  "a330-900neo",
+                         "name":  "Airbus A330-900neo"
+                     },
+                     {
+                         "slug":  "a340-600",
+                         "name":  "Airbus A340-600 (Aerosoft / ToLiss)"
+                     },
+                     {
+                         "slug":  "a380x",
+                         "name":  "FlyByWire A380X"
+                     },
+                     {
+                         "slug":  "a400m",
+                         "name":  "Airbus A400M Atlas"
+                     },
+                     {
+                         "slug":  "airbus-a310",
+                         "name":  "Airbus A310"
+                     },
+                     {
+                         "slug":  "atr-72-600",
+                         "name":  "ATR 72-600"
+                     },
+                     {
+                         "slug":  "avro-rj85",
+                         "name":  "Avro RJ85 (Just Flight)"
+                     },
+                     {
+                         "slug":  "bell-407",
+                         "name":  "Bell 407"
+                     },
+                     {
+                         "slug":  "bell-uh-1h-huey",
+                         "name":  "Bell UH-1H Huey"
+                     },
+                     {
+                         "slug":  "blacksquare-baron",
+                         "name":  "Beechcraft Baron 58 (Black Square)"
+                     },
+                     {
+                         "slug":  "blacksquare-bonanza",
+                         "name":  "Beechcraft Bonanza (Black Square)"
+                     },
+                     {
+                         "slug":  "blacksquare-caravan",
+                         "name":  "Cessna 208B Grand Caravan (Black Square)"
+                     },
+                     {
+                         "slug":  "blacksquare-commander-114",
+                         "name":  "Commander 114 (Black Square)"
+                     },
+                     {
+                         "slug":  "blacksquare-duke",
+                         "name":  "Beechcraft Duke B60 (Black Square)"
+                     },
+                     {
+                         "slug":  "blacksquare-starship",
+                         "name":  "Beechcraft Starship (Black Square)"
+                     },
+                     {
+                         "slug":  "blacksquare-tbm-850",
+                         "name":  "Daher TBM 850 (Black Square)"
+                     },
+                     {
+                         "slug":  "blacksquare-turbine-duke",
+                         "name":  "Beechcraft Turbine Duke (Black Square)"
+                     },
+                     {
+                         "slug":  "boeing-737-max",
+                         "name":  "Boeing 737 MAX 8 (Asobo)"
+                     },
+                     {
+                         "slug":  "boeing-747-8i",
+                         "name":  "Boeing 747-8i"
+                     },
+                     {
+                         "slug":  "boeing-787-9",
+                         "name":  "Boeing 787-9 Dreamliner"
+                     },
+                     {
+                         "slug":  "bonanza-g36",
+                         "name":  "Beechcraft Bonanza G36"
+                     },
+                     {
+                         "slug":  "c172-preflight",
+                         "name":  "Cessna 172 Preflight"
+                     },
+                     {
+                         "slug":  "cessna-152",
+                         "name":  "Cessna 152"
+                     },
+                     {
+                         "slug":  "cessna-172",
+                         "name":  "Cessna 172 Skyhawk"
+                     },
+                     {
+                         "slug":  "cessna-208-caravan",
+                         "name":  "Cessna 208 Caravan"
+                     },
+                     {
+                         "slug":  "cirrus-sr22",
+                         "name":  "Cirrus SR22"
+                     },
+                     {
+                         "slug":  "citation-longitude",
+                         "name":  "Cessna Citation Longitude"
+                     },
+                     {
+                         "slug":  "citation-x",
+                         "name":  "Cessna Citation X (FlightFX)"
+                     },
+                     {
+                         "slug":  "crj-700",
+                         "name":  "Aerosoft CRJ 700"
+                     },
+                     {
+                         "slug":  "da40-ng",
+                         "name":  "Diamond DA40 NG (G1000 NXi)"
+                     },
+                     {
+                         "slug":  "dhc-2-beaver",
+                         "name":  "DHC-2 Beaver"
+                     },
+                     {
+                         "slug":  "dhc-6-twin-otter",
+                         "name":  "DHC-6 Twin Otter"
+                     },
+                     {
+                         "slug":  "do-228-100",
+                         "name":  "Dornier Do 228-100 (Carenado)"
+                     },
+                     {
+                         "slug":  "douglas-dc-3",
+                         "name":  "Douglas DC-3"
+                     },
+                     {
+                         "slug":  "ec135-t1",
+                         "name":  "Eurocopter EC135 T1"
+                     },
+                     {
+                         "slug":  "embraer-e175",
+                         "name":  "Embraer E-Jets E170/E175 (FlightSim Studio)"
+                     },
+                     {
+                         "slug":  "embraer-e195",
+                         "name":  "Embraer E-Jets E190/E195 (FlightSim Studio)"
+                     },
+                     {
+                         "slug":  "fa-18e-super-hornet",
+                         "name":  "F/A-18E Super Hornet"
+                     },
+                     {
+                         "slug":  "fenix-a320",
+                         "name":  "Fenix A320 (CEO)"
+                     },
+                     {
+                         "slug":  "fenix-a321",
+                         "name":  "Fenix A321"
+                     },
+                     {
+                         "slug":  "fokker-f100",
+                         "name":  "Fokker F100"
+                     },
+                     {
+                         "slug":  "fokker-f28",
+                         "name":  "Fokker F28 Fellowship"
+                     },
+                     {
+                         "slug":  "h125",
+                         "name":  "Airbus H125"
+                     },
+                     {
+                         "slug":  "hawker-800xp",
+                         "name":  "Hawker 800XP (FlightFX)"
+                     },
+                     {
+                         "slug":  "hondajet-ha420",
+                         "name":  "Honda HA-420 HondaJet (FlightFX)"
+                     },
+                     {
+                         "slug":  "ifly-737-800",
+                         "name":  "Boeing 737-800 (iFly)"
+                     },
+                     {
+                         "slug":  "ifly-737-max",
+                         "name":  "Boeing 737 MAX 8 (iFly)"
+                     },
+                     {
+                         "slug":  "inibuilds-a350",
+                         "name":  "Inibuilds A350-900"
+                     },
+                     {
+                         "slug":  "inibuilds-a380",
+                         "name":  "Inibuilds A380-800"
+                     },
+                     {
+                         "slug":  "king-air-350i",
+                         "name":  "Beechcraft King Air 350i"
+                     },
+                     {
+                         "slug":  "md-11",
+                         "name":  "McDonnell Douglas MD-11"
+                     },
+                     {
+                         "slug":  "md-82",
+                         "name":  "McDonnell Douglas MD-82"
+                     },
+                     {
+                         "slug":  "p180-avanti",
+                         "name":  "Piaggio P180 Avanti II (FlightFX)"
+                     },
+                     {
+                         "slug":  "pa-28r-arrow-iii",
+                         "name":  "Piper PA-28R-201 Arrow III (Just Flight)"
+                     },
+                     {
+                         "slug":  "pa-28r-turbo-arrow",
+                         "name":  "Piper PA-28R Turbo Arrow III/IV (Just Flight)"
+                     },
+                     {
+                         "slug":  "pa-28-warrior-ii",
+                         "name":  "Piper PA-28-161 Warrior II (Just Flight)"
+                     },
+                     {
+                         "slug":  "phenom-300e",
+                         "name":  "Embraer Phenom 300E (FSReborn)"
+                     },
+                     {
+                         "slug":  "pilatus-pc-12",
+                         "name":  "Pilatus PC-12"
+                     },
+                     {
+                         "slug":  "pmdg-737-800",
+                         "name":  "PMDG 737-800"
+                     },
+                     {
+                         "slug":  "pmdg-747-400",
+                         "name":  "PMDG 747-400"
+                     },
+                     {
+                         "slug":  "pmdg-777-300er",
+                         "name":  "PMDG 777-300ER"
+                     },
+                     {
+                         "slug":  "tbm-930",
+                         "name":  "Daher TBM 930"
+                     }
+                 ],
+    "source":  "flightchecklist.app/msfs",
+    "generated":  "2026-11-09"
 }

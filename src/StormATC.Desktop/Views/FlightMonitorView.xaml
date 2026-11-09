@@ -43,6 +43,9 @@
                        FontWeight="SemiBold"
                        Foreground="{StaticResource AccentBrush}"
                        Margin="0,8,0,0" />
+            <TextBlock Text="{Binding AircraftHandling, StringFormat=Handling: {0}}"
+                       Style="{StaticResource SecondaryTextStyle}"
+                       Margin="0,4,0,0" />
             <TextBlock Text="Current autopilot-managed flight phase. Transitions are driven by the deterministic phase engine."
                        Style="{StaticResource SecondaryTextStyle}"
                        Margin="0,4,0,0" />

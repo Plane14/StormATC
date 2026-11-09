@@ -137,6 +137,9 @@ public sealed record ControlTargets
 
     /// <summary>When true, gear should be down.</summary>
     public bool GearDown { get; init; }
+
+    /// <summary>When true, the aircraft is a taildragger and tailwheel handling is applied.</summary>
+    public bool Taildragger { get; init; }
 }
 
 /// <summary>A warning generated during phase evaluation.</summary>

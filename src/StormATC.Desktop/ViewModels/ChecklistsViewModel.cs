@@ -85,6 +85,33 @@ public sealed partial class ChecklistsViewModel : ObservableObject, IRefreshable
         }
     }
 
+    /// <summary>Marks the current step complete within the running execution.</summary>
+    [RelayCommand]
+    private async Task CompleteCurrentStep()
+    {
+        if (_executionId is null)
+        {
+            return;
+        }
+
+        ChecklistExecutionState? state = _checklistService.GetExecutionState(_executionId);
+        ChecklistStep? step = state?.CurrentStep;
+        if (state is null || step is null)
+        {
+            StatusMessage = "No checklist is running.";
+            return;
+        }
+
+        bool completed = await _checklistService
+            .ExecuteStepAsync(_executionId, step.Id)
+            .ConfigureAwait(true);
+
+        UpdateExecutionState();
+        StatusMessage = completed
+            ? $"Step '{step.Title}' completed."
+            : $"Could not complete step '{step.Title}'.";
+    }
+
     [RelayCommand(CanExecute = nameof(CanAdvanceStep))]
     private void AdvanceStep()
     {

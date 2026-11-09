@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-OUT_DIR = Path("/workspace/app/flightchecklists")
+OUT_DIR = Path(__file__).resolve().parent / "data" / "flightchecklists"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Aircraft list from flightchecklist.app/msfs - all 65 aircraft

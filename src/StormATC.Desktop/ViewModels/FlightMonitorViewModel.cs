@@ -20,6 +20,9 @@ public sealed partial class FlightMonitorViewModel : ObservableObject, IRefresha
     private string _autopilotMode = "Disengaged";
 
     [ObservableProperty]
+    private string _aircraftHandling = "Tricycle gear";
+
+    [ObservableProperty]
     private double? _targetAltitudeFeet;
 
     [ObservableProperty]
@@ -77,6 +80,7 @@ public sealed partial class FlightMonitorViewModel : ObservableObject, IRefresha
 
         Domain.State.ControlTargets? targets = _autopilot.CurrentTargets;
         AutopilotMode = targets?.Mode.ToString() ?? "Disengaged";
+        AircraftHandling = targets?.Taildragger == true ? "Taildragger" : "Tricycle gear";
         TargetAltitudeFeet = targets?.TargetAltitudeFeet?.Feet;
         TargetHeadingDegrees = targets?.TargetHeadingDegrees;
         TargetSpeedKnots = targets?.TargetSpeedKnots?.Knots;

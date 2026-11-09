@@ -42,10 +42,23 @@ public sealed class HybridAutopilotService : IAutopilotService
     private ControlTargets ComputeTargets(PhaseEvaluationContext context)
     {
         Domain.Aircraft.AircraftState aircraft = context.AircraftState;
+        bool taildragger = aircraft.IsTaildragger;
+
+        // Taildraggers fly slower profiles: a shallow climb, a low approach speed, and no
+        // aggressive pitch or bank demands during rollout.
+        SpeedKnots climbSpeed = new(taildragger
+            ? _flightOptions.TaildraggerClimbSpeedKnots
+            : _flightOptions.DefaultCruiseSpeedKt);
+        SpeedKnots approachSpeed = new(taildragger
+            ? _flightOptions.TaildraggerApproachSpeedKnots
+            : 120);
+        SpeedKnots descentSpeed = new(taildragger
+            ? _flightOptions.TaildraggerApproachSpeedKnots
+            : _flightOptions.DefaultCruiseSpeedKt);
 
         return context.CurrentPhase switch
         {
-            FlightPhase.InitialClimb or FlightPhase.Climb => new ControlTargets
+            FlightPhase.InitialClimb or FlightPhase.Climb or FlightPhase.GoAround => new ControlTargets
             {
                 Mode = AutopilotMode.VerticalSpeedHold,
                 TargetVerticalSpeedFpm = new VerticalSpeedFpm(_flightOptions.DefaultClimbRateFpm),
@@ -53,8 +66,10 @@ public sealed class HybridAutopilotService : IAutopilotService
                     context.FlightPlan?.CruiseAltitude?.Feet
                     ?? context.TerrainProfile?.MaxRequiredAltitudeFt
                     ?? aircraft.IndicatedAltitudeFeet),
-                TargetSpeedKnots = new SpeedKnots(_flightOptions.DefaultCruiseSpeedKt),
+                TargetSpeedKnots = climbSpeed,
+                TargetPitchDegrees = taildragger ? 8 : null,
                 GearDown = true,
+                Taildragger = taildragger,
             },
             FlightPhase.Cruise => new ControlTargets
             {
@@ -64,8 +79,9 @@ public sealed class HybridAutopilotService : IAutopilotService
                     ?? context.TerrainProfile?.MaxRequiredAltitudeFt
                     ?? aircraft.IndicatedAltitudeFeet),
                 TargetHeadingDegrees = BearingToDestination(context),
-                TargetSpeedKnots = new SpeedKnots(_flightOptions.DefaultCruiseSpeedKt),
+                TargetSpeedKnots = climbSpeed,
                 GearDown = true,
+                Taildragger = taildragger,
             },
             FlightPhase.Descent => new ControlTargets
             {
@@ -74,8 +90,9 @@ public sealed class HybridAutopilotService : IAutopilotService
                 TargetAltitudeFeet = new AltitudeFeet(
                     context.DestinationAirport?.ElevationFeet ?? 0),
                 TargetHeadingDegrees = BearingToDestination(context),
-                TargetSpeedKnots = new SpeedKnots(_flightOptions.DefaultCruiseSpeedKt),
+                TargetSpeedKnots = descentSpeed,
                 GearDown = true,
+                Taildragger = taildragger,
             },
             FlightPhase.Approach or FlightPhase.FinalApproach => new ControlTargets
             {
@@ -83,18 +100,21 @@ public sealed class HybridAutopilotService : IAutopilotService
                 TargetAltitudeFeet = new AltitudeFeet(
                     context.DestinationAirport?.ElevationFeet ?? 0),
                 TargetHeadingDegrees = BearingToDestination(context),
-                TargetSpeedKnots = new SpeedKnots(120),
+                TargetSpeedKnots = approachSpeed,
                 GearDown = true,
+                Taildragger = taildragger,
             },
             FlightPhase.Rollout or FlightPhase.TaxiIn or FlightPhase.Shutdown => new ControlTargets
             {
                 Mode = AutopilotMode.Disengaged,
                 GearDown = context.CurrentPhase != FlightPhase.Shutdown,
+                Taildragger = taildragger,
             },
             _ => new ControlTargets
             {
                 Mode = AutopilotMode.Disengaged,
                 GearDown = aircraft.IsOnGround ? aircraft.GearHandleDown : true,
+                Taildragger = taildragger,
             },
         };
     }
