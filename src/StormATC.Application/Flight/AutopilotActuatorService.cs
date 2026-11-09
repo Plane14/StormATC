@@ -402,6 +402,7 @@ public sealed class AutopilotActuatorService : IAutopilotActuator, IDisposable
         if (targets.TargetFlapIndex is int flap)
         {
             string? binding = profile.FlapEvents.TryGetValue(flap, out string? flapEvent)
+                && !string.IsNullOrWhiteSpace(flapEvent)
                 ? flapEvent
                 : profile.FlapValueScale is double flapScale && profile.EventFor("flaps") is string flapEventName
                     ? flapEventName
@@ -502,7 +503,8 @@ public sealed class AutopilotActuatorService : IAutopilotActuator, IDisposable
     }
 
     private static double? flapScaleOrDefault(AircraftAutoflyProfile profile, int flap) =>
-        profile.FlapEvents.ContainsKey(flap)
+        profile.FlapEvents.TryGetValue(flap, out string? flapEvent)
+            && !string.IsNullOrWhiteSpace(flapEvent)
             ? null
             : profile.FlapValueScale is double scale ? flap * scale : null;
 
