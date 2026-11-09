@@ -84,7 +84,7 @@
                            FontSize="16"
                            FontWeight="SemiBold" />
               </StackPanel>
-            </StackPanel>
+            </Grid>
           </StackPanel>
         </Border>
 

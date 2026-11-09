@@ -348,8 +348,9 @@ public static class ServiceCollectionExtensions
 
         // --- AI Copilot Features ------------------------------------------------------------
         // Flight phase orchestration and autopilot services
-        services.AddSingleton<IFlightOrchestrator, FlightOrchestrator>();
-        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<IFlightOrchestrator>());
+        services.AddSingleton<FlightOrchestrator>();
+        services.AddSingleton<IFlightOrchestrator>(sp => sp.GetRequiredService<FlightOrchestrator>());
+        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<FlightOrchestrator>());
         services.AddSingleton<IAutopilotService, HybridAutopilotService>();
         services.AddSingleton<IFlightPhaseEngine, FlightPhaseEngine>();
         services.AddSingleton<IChecklistService, ChecklistService>();

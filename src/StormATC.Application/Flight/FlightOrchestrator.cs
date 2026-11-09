@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using StormATC.Application.Abstractions;
+using IFlightPhaseEngine = StormATC.Domain.Atc.IFlightPhaseEngine;
 
 namespace StormATC.Application.Flight;
 
@@ -62,6 +63,7 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
                 Callsign = StormATC.Domain.ValueObjects.Callsign.Create("N00000"),
                 DepartureIcao = string.Empty,
                 DestinationIcao = string.Empty,
+                SourceIdentifier = "StormATC",
             },
             DepartureAirport = null,
             DestinationAirport = null,

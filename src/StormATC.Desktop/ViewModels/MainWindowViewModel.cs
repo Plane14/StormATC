@@ -45,9 +45,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Transcript = transcript ?? throw new ArgumentNullException(nameof(transcript));
         Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
-        Checklists = checklists ?? throw new ArgumentNullException(nameof(checklists));
-        FlightMonitor = flightMonitor ?? throw new ArgumentNullException(nameof(flightMonitor));
-        MissionBuilder = missionBuilder ?? throw new ArgumentNullException(nameof(missionBuilder));
 
         Pages =
         [

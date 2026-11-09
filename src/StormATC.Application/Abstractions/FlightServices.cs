@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using StormATC.Application.Checklists;
 
 namespace StormATC.Application.Abstractions;
 
@@ -25,16 +26,6 @@ public interface IAutopilotService
     Domain.State.ControlTargets Update(
         Domain.State.PhaseEvaluationContext context,
         Domain.State.PhaseDecision decision);
-}
-
-/// <summary>Deterministic flight phase state machine (separate from IAtcStateEngine).</summary>
-public interface IFlightPhaseEngine
-{
-    /// <summary>Evaluates a phase context and returns a phase decision.</summary>
-    Domain.State.PhaseDecision Evaluate(Domain.State.PhaseEvaluationContext context);
-
-    /// <summary>Evaluates state changes without pilot input (autonomous transitions).</summary>
-    Domain.State.PhaseDecision EvaluateStateChange(Domain.State.PhaseEvaluationContext context);
 }
 
 /// <summary>Terrain elevation provider.</summary>
@@ -67,6 +58,18 @@ public interface IChecklistService
 {
     /// <summary>Executes a checklist step.</summary>
     Task ExecuteStepAsync(string stepId, CancellationToken ct = default);
+
+    /// <summary>Starts executing a checklist definition.</summary>
+    string StartChecklist(Domain.Checklists.ChecklistDefinition definition);
+
+    /// <summary>Gets the current step of an execution.</summary>
+    Domain.Checklists.ChecklistStep? GetCurrentStep(string executionId);
+
+    /// <summary>Advances to the next step.</summary>
+    bool AdvanceStep(string executionId);
+
+    /// <summary>Gets all active executions.</summary>
+    IReadOnlyList<ChecklistExecutionState> GetActiveExecutions();
 }
 
 /// <summary>Checklist repository - load/save checklist definitions.</summary>

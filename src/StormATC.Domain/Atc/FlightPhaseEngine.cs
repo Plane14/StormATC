@@ -2,6 +2,16 @@ using StormATC.Domain.State;
 
 namespace StormATC.Domain.Atc;
 
+/// <summary>Deterministic flight phase state machine (separate from <see cref="IAtcStateEngine"/>).</summary>
+public interface IFlightPhaseEngine
+{
+    /// <summary>Evaluates a phase context and returns a phase decision.</summary>
+    State.PhaseDecision Evaluate(State.PhaseEvaluationContext context);
+
+    /// <summary>Evaluates state changes without pilot input (autonomous transitions).</summary>
+    State.PhaseDecision EvaluateStateChange(State.PhaseEvaluationContext context);
+}
+
 /// <summary>Default implementation of the flight phase engine (deterministic state machine).</summary>
 /// <remarks>
 /// This engine manages physical flight phases for autopilot control and terrain awareness.
@@ -13,39 +23,39 @@ public sealed class FlightPhaseEngine : IFlightPhaseEngine
     public PhaseDecision Evaluate(PhaseEvaluationContext context)
     {
         // Guard 1: Emergency/abnormal handling
-        if (context.CurrentPhase == FlightPhase.Abnormal)
+        if (context.CurrentPhase == State.FlightPhase.Abnormal)
         {
-            return PhaseDecision.TransitionTo(FlightPhase.Abnormal);
+            return PhaseDecision.TransitionTo(State.FlightPhase.Abnormal);
         }
 
         // Guard 2: Airborne detection from ground phases
         if (!context.AircraftState.IsOnGround &&
-            (context.CurrentPhase == FlightPhase.Preflight ||
-             context.CurrentPhase == FlightPhase.Startup ||
-             context.CurrentPhase == FlightPhase.TaxiOut))
+            (context.CurrentPhase == State.FlightPhase.Preflight ||
+             context.CurrentPhase == State.FlightPhase.Startup ||
+             context.CurrentPhase == State.FlightPhase.TaxiOut))
         {
-            return PhaseDecision.TransitionTo(FlightPhase.InitialClimb);
+            return PhaseDecision.TransitionTo(State.FlightPhase.InitialClimb);
         }
 
         // Dispatch to phase handler
         return context.CurrentPhase switch
         {
-            FlightPhase.Preflight => HandlePreflight(context),
-            FlightPhase.Startup => HandleStartup(context),
-            FlightPhase.TaxiOut => HandleTaxiOut(context),
-            FlightPhase.HoldingShort => HandleHoldingShort(context),
-            FlightPhase.LineUp => HandleLineUp(context),
-            FlightPhase.Takeoff => HandleTakeoff(context),
-            FlightPhase.InitialClimb => HandleInitialClimb(context),
-            FlightPhase.Climb => HandleClimb(context),
-            FlightPhase.Cruise => HandleCruise(context),
-            FlightPhase.Descent => HandleDescent(context),
-            FlightPhase.Approach => HandleApproach(context),
-            FlightPhase.FinalApproach => HandleFinalApproach(context),
-            FlightPhase.GoAround => HandleGoAround(context),
-            FlightPhase.Rollout => HandleRollout(context),
-            FlightPhase.TaxiIn => HandleTaxiIn(context),
-            FlightPhase.Shutdown => HandleShutdown(context),
+            State.FlightPhase.Preflight => HandlePreflight(context),
+            State.FlightPhase.Startup => HandleStartup(context),
+            State.FlightPhase.TaxiOut => HandleTaxiOut(context),
+            State.FlightPhase.HoldingShort => HandleHoldingShort(context),
+            State.FlightPhase.LineUp => HandleLineUp(context),
+            State.FlightPhase.Takeoff => HandleTakeoff(context),
+            State.FlightPhase.InitialClimb => HandleInitialClimb(context),
+            State.FlightPhase.Climb => HandleClimb(context),
+            State.FlightPhase.Cruise => HandleCruise(context),
+            State.FlightPhase.Descent => HandleDescent(context),
+            State.FlightPhase.Approach => HandleApproach(context),
+            State.FlightPhase.FinalApproach => HandleFinalApproach(context),
+            State.FlightPhase.GoAround => HandleGoAround(context),
+            State.FlightPhase.Rollout => HandleRollout(context),
+            State.FlightPhase.TaxiIn => HandleTaxiIn(context),
+            State.FlightPhase.Shutdown => HandleShutdown(context),
             _ => PhaseDecision.Silent(),
         };
     }
@@ -56,63 +66,63 @@ public sealed class FlightPhaseEngine : IFlightPhaseEngine
 
         // Becoming airborne -> InitialClimb
         if (!context.AircraftState.IsOnGround &&
-            (context.CurrentPhase == FlightPhase.Takeoff ||
-             context.CurrentPhase == FlightPhase.LineUp ||
-             context.CurrentPhase == FlightPhase.HoldingShort))
+            (context.CurrentPhase == State.FlightPhase.Takeoff ||
+             context.CurrentPhase == State.FlightPhase.LineUp ||
+             context.CurrentPhase == State.FlightPhase.HoldingShort))
         {
-            return PhaseDecision.TransitionTo(FlightPhase.InitialClimb);
+            return PhaseDecision.TransitionTo(State.FlightPhase.InitialClimb);
         }
 
         // Stable climb through 1000 ft AGL -> Climb
-        if (context.CurrentPhase == FlightPhase.InitialClimb &&
+        if (context.CurrentPhase == State.FlightPhase.InitialClimb &&
             context.AircraftState.AltitudeAboveGroundFeet > 1000)
         {
-            return PhaseDecision.TransitionTo(FlightPhase.Climb);
+            return PhaseDecision.TransitionTo(State.FlightPhase.Climb);
         }
 
         // Climb -> Cruise (at or near target altitude, considering terrain)
-        if (context.CurrentPhase == FlightPhase.Climb &&
+        if (context.CurrentPhase == State.FlightPhase.Climb &&
             context.AircraftState.IndicatedAltitudeFeet >=
             (context.TerrainProfile?.MaxRequiredAltitudeFt ?? 0) - 200)
         {
-            return PhaseDecision.TransitionTo(FlightPhase.Cruise);
+            return PhaseDecision.TransitionTo(State.FlightPhase.Cruise);
         }
 
         // Cruise -> Descent (when terrain profile indicates top of descent)
-        if (context.CurrentPhase == FlightPhase.Cruise && context.TerrainProfile != null)
+        if (context.CurrentPhase == State.FlightPhase.Cruise && context.TerrainProfile != null)
         {
-            return PhaseDecision.TransitionTo(FlightPhase.Descent);
+            return PhaseDecision.TransitionTo(State.FlightPhase.Descent);
         }
 
         // Touchdown -> Rollout
         if (context.AircraftState.IsOnGround &&
-            (context.CurrentPhase == FlightPhase.FinalApproach ||
-             context.CurrentPhase == FlightPhase.Approach))
+            (context.CurrentPhase == State.FlightPhase.FinalApproach ||
+             context.CurrentPhase == State.FlightPhase.Approach))
         {
-            return PhaseDecision.TransitionTo(FlightPhase.Rollout);
+            return PhaseDecision.TransitionTo(State.FlightPhase.Rollout);
         }
 
         // Rollout -> TaxiIn (below 5 knots)
-        if (context.CurrentPhase == FlightPhase.Rollout &&
+        if (context.CurrentPhase == State.FlightPhase.Rollout &&
             context.AircraftState.GroundSpeedKnots < 5)
         {
-            return PhaseDecision.TransitionTo(FlightPhase.TaxiIn);
+            return PhaseDecision.TransitionTo(State.FlightPhase.TaxiIn);
         }
 
         // TaxiIn -> Shutdown (at stand with parking brake set)
-        if (context.CurrentPhase == FlightPhase.TaxiIn &&
+        if (context.CurrentPhase == State.FlightPhase.TaxiIn &&
             context.AircraftState.IsOnGround &&
             context.AircraftState.ParkingBrakeSet &&
             context.AircraftState.GroundSpeedKnots < 1)
         {
-            return PhaseDecision.TransitionTo(FlightPhase.Shutdown);
+            return PhaseDecision.TransitionTo(State.FlightPhase.Shutdown);
         }
 
         return PhaseDecision.Silent();
     }
 
     private static PhaseDecision HandlePreflight(PhaseEvaluationContext context) =>
-        PhaseDecision.TransitionTo(FlightPhase.Startup);
+        PhaseDecision.TransitionTo(State.FlightPhase.Startup);
 
     private static PhaseDecision HandleStartup(PhaseEvaluationContext context) =>
         PhaseDecision.Silent();
@@ -148,7 +158,7 @@ public sealed class FlightPhaseEngine : IFlightPhaseEngine
         PhaseDecision.Silent();
 
     private static PhaseDecision HandleGoAround(PhaseEvaluationContext context) =>
-        PhaseDecision.TransitionTo(FlightPhase.InitialClimb);
+        PhaseDecision.TransitionTo(State.FlightPhase.InitialClimb);
 
     private static PhaseDecision HandleRollout(PhaseEvaluationContext context) =>
         PhaseDecision.Silent();

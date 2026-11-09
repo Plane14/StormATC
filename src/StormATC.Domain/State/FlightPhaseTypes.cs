@@ -1,3 +1,5 @@
+using StormATC.Domain.ValueObjects;
+
 namespace StormATC.Domain.State;
 
 /// <summary>Autopilot control modes for the hybrid autopilot system.</summary>

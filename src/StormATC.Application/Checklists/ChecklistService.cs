@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using StormATC.Application.Abstractions;
+using StormATC.Domain.Checklists;
 
 namespace StormATC.Application.Checklists;
 
@@ -118,7 +119,7 @@ public sealed record ChecklistExecutionState
     public IReadOnlyList<ChecklistStep> Steps { get; init; } = new List<ChecklistStep>();
 
     /// <summary>Current step index.</summary>
-    public int CurrentStepIndex { get; init; } = 0;
+    public int CurrentStepIndex { get; set; }
 
     /// <summary>Completed step IDs.</summary>
     public HashSet<string> CompletedSteps { get; init; } = new(StringComparer.Ordinal);
@@ -127,7 +128,7 @@ public sealed record ChecklistExecutionState
     public DateTimeOffset StartTime { get; init; } = DateTimeOffset.UtcNow;
 
     /// <summary>Completion time, null when still running.</summary>
-    public DateTimeOffset? CompletedAt { get; init; }
+    public DateTimeOffset? CompletedAt { get; set; }
 
     /// <summary>Current step, null when completed.</summary>
     public ChecklistStep? CurrentStep =>

@@ -460,7 +460,7 @@
                                  Width="120"
                                  HorizontalAlignment="Left" />
                       </StackPanel>
-                    </StackPanel>
+                    </Grid>
                   </StackPanel>
                 </Border>
 
@@ -504,7 +504,7 @@
                                  Width="120"
                                  HorizontalAlignment="Left" />
                       </StackPanel>
-                    </StackPanel>
+                    </Grid>
                     <Grid Margin="0,8,0,0">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -565,7 +565,7 @@
                                  Width="120"
                                  HorizontalAlignment="Left" />
                       </StackPanel>
-                    </StackPanel>
+                    </Grid>
                   </StackPanel>
                 </Border>
 
