@@ -30,7 +30,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
         RadioViewModel radio,
         TranscriptViewModel transcript,
         SettingsViewModel settings,
-        DiagnosticsViewModel diagnostics)
+        DiagnosticsViewModel diagnostics,
+        ChecklistsViewModel checklists,
+        FlightMonitorViewModel flightMonitor,
+        MissionBuilderViewModel missionBuilder)
     {
         Dashboard = dashboard ?? throw new ArgumentNullException(nameof(dashboard));
         FlightPlan = flightPlan ?? throw new ArgumentNullException(nameof(flightPlan));
@@ -38,6 +41,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Transcript = transcript ?? throw new ArgumentNullException(nameof(transcript));
         Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        Checklists = checklists ?? throw new ArgumentNullException(nameof(checklists));
+        FlightMonitor = flightMonitor ?? throw new ArgumentNullException(nameof(flightMonitor));
+        MissionBuilder = missionBuilder ?? throw new ArgumentNullException(nameof(missionBuilder));
 
         Pages =
         [
@@ -79,6 +85,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 diagnostics),
         ];
 
+        // AI Copilot Features pages are hidden until the feature toggle is enabled in Settings.
+        // They are added to Pages when EnableAICopilotFeatures becomes true.
+        _checklists = checklists;
+        _flightMonitor = flightMonitor;
+        _missionBuilder = missionBuilder;
+
         _currentPage = dashboard;
     }
 
@@ -99,6 +111,19 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     /// <summary>The diagnostics page.</summary>
     public DiagnosticsViewModel Diagnostics { get; }
+
+    private readonly ChecklistsViewModel _checklists;
+    private readonly FlightMonitorViewModel _flightMonitor;
+    private readonly MissionBuilderViewModel _missionBuilder;
+
+    /// <summary>The checklists page (AI Copilot Features).</summary>
+    public ChecklistsViewModel Checklists => _checklists;
+
+    /// <summary>The flight monitor page (AI Copilot Features).</summary>
+    public FlightMonitorViewModel FlightMonitor => _flightMonitor;
+
+    /// <summary>The mission builder page (AI Copilot Features).</summary>
+    public MissionBuilderViewModel MissionBuilder => _missionBuilder;
 
     /// <summary>Every navigable page, in order.</summary>
     public ObservableCollection<NavigationEntry> Pages { get; }

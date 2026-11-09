@@ -1,0 +1,1009 @@
+{
+  "Id": "inibuilds-a350",
+  "Name": "Inibuilds A350-900",
+  "AircraftType": "A359",
+  "Category": "Preflight",
+  "Description": "Startup and procedures checklist for Inibuilds A350-900 (iniBuilds).",
+  "Steps": [
+    {
+      "Id": "01",
+      "Title": "Weather Briefing (METAR / TAF)",
+      "Description": "Check departure, enroute, destination, and alternate weather.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "02",
+      "Title": "NOTAMs",
+      "Description": "Check for runway closures and airspace restrictions.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "03",
+      "Title": "Flight Plan",
+      "Description": "LOAD and verify route, fuel, winds, alternates.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "04",
+      "Title": "Fuel Planning",
+      "Description": "Block fuel includes taxi, trip, contingency, alternate, final reserve.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "05",
+      "Title": "Weight & Balance / Loadsheet",
+      "Description": "Verify ZFW, TOW, and LW within limits.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "06",
+      "Title": "Performance - Takeoff Speeds",
+      "Description": "V1, VR, V2 calculated.",
+      "Type": "Calculation",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "07",
+      "Title": "Battery",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "08",
+      "Title": "External Power",
+      "Description": "ON if available.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "09",
+      "Title": "APU Master Switch",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "10",
+      "Title": "APU Bleed",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "11",
+      "Title": "ADIRS",
+      "Description": "NAV.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "12",
+      "Title": "Navigation Lights",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "13",
+      "Title": "Seat Belts Sign",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "14",
+      "Title": "Fuel Pumps",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "15",
+      "Title": "FMC - INIT Page",
+      "Description": "ENTER Flight Number, Cost Index.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "16",
+      "Title": "FMC - FROM/TO",
+      "Description": "SET Departure/Arrival airports.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "17",
+      "Title": "FMC - Route",
+      "Description": "VERIFY or ENTER route.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "18",
+      "Title": "FMC - Performance",
+      "Description": "ENTER Fuel, ZFW, CG.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "19",
+      "Title": "FMC - Takeoff",
+      "Description": "ENTER V1, VR, V2.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "20",
+      "Title": "FCU Altitude",
+      "Description": "SET Initial Climb Altitude.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "21",
+      "Title": "Transponder",
+      "Description": "SET assigned code - STBY.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "22",
+      "Title": "Parking Brake",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "23",
+      "Title": "Beacon Light",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "24",
+      "Title": "Doors",
+      "Description": "CLOSED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "25",
+      "Title": "Thrust Levers",
+      "Description": "IDLE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "26",
+      "Title": "Pack Switches",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "27",
+      "Title": "Engine Mode Selector",
+      "Description": "IGN/START.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "28",
+      "Title": "Engine Master",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "29",
+      "Title": "Engine N2",
+      "Description": "MONITOR - wait for stable idle.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "30",
+      "Title": "Engine Mode Selector",
+      "Description": "NORM.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "31",
+      "Title": "Engine Bleeds",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "32",
+      "Title": "Pack Switches",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "33",
+      "Title": "APU Bleed",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "34",
+      "Title": "Generator Switches",
+      "Description": "VERIFY ON.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "35",
+      "Title": "Flight Controls",
+      "Description": "CHECK.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "36",
+      "Title": "Trim",
+      "Description": "SET FOR TAKEOFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "37",
+      "Title": "Flaps",
+      "Description": "SET for takeoff.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "38",
+      "Title": "Auto Brake",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "39",
+      "Title": "Taxi Light",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "40",
+      "Title": "Parking Brake",
+      "Description": "RELEASE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "41",
+      "Title": "Flight Controls",
+      "Description": "CHECKED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "42",
+      "Title": "Briefing",
+      "Description": "CONFIRMED.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "43",
+      "Title": "Flaps",
+      "Description": "CONFIRM T/O setting.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "44",
+      "Title": "V-Speeds",
+      "Description": "CONFIRM V1, VR, V2.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "45",
+      "Title": "Transponder",
+      "Description": "AUTO / ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "46",
+      "Title": "ECAM Memo",
+      "Description": "CHECK - T/O NO BLUE.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "47",
+      "Title": "ATC Clearance",
+      "Description": "OBTAINED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "48",
+      "Title": "Landing Lights",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "49",
+      "Title": "Strobe Lights",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "50",
+      "Title": "Brakes",
+      "Description": "HOLD.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "51",
+      "Title": "Thrust Levers",
+      "Description": "ADVANCE to takeoff thrust.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "52",
+      "Title": "Brakes",
+      "Description": "RELEASE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "53",
+      "Title": "FMA",
+      "Description": "VERIFY correct modes.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "54",
+      "Title": "V1",
+      "Description": "CALLOUT.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "55",
+      "Title": "Rotate at VR",
+      "Description": "SMOOTH backstick.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "56",
+      "Title": "Positive Climb",
+      "Description": "CONFIRMED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "57",
+      "Title": "Landing Gear",
+      "Description": "UP.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "58",
+      "Title": "Thrust Levers",
+      "Description": "CL detent.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "59",
+      "Title": "Autopilot",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "60",
+      "Title": "Flaps",
+      "Description": "RETRACT.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "61",
+      "Title": "Landing Gear",
+      "Description": "CONFIRM UP.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "62",
+      "Title": "Baro Reference",
+      "Description": "SET STD.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "63",
+      "Title": "Altitude",
+      "Description": "VERIFY level at cruise FL.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "64",
+      "Title": "Autopilot",
+      "Description": "ON - managed speed.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "65",
+      "Title": "Engine Parameters",
+      "Description": "CHECK - all normal.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "66",
+      "Title": "Fuel Quantity & Balance",
+      "Description": "CHECK.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "67",
+      "Title": "ATIS",
+      "Description": "OBTAINED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "68",
+      "Title": "FMC - Approach Page",
+      "Description": "ENTER QNH, Temp, Wind.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "69",
+      "Title": "Approach Briefing",
+      "Description": "COMPLETED.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "70",
+      "Title": "Auto Brake",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "71",
+      "Title": "ILS Frequency",
+      "Description": "SET and IDENTIFIED.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "72",
+      "Title": "ATC Descent Clearance",
+      "Description": "OBTAINED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "73",
+      "Title": "FCU Altitude",
+      "Description": "SET cleared altitude.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "74",
+      "Title": "Transition Level",
+      "Description": "SET local QNH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "75",
+      "Title": "Landing Lights",
+      "Description": "ON below 10,000 ft.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "76",
+      "Title": "APPR Button",
+      "Description": "PRESS when cleared for approach.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "77",
+      "Title": "Flaps",
+      "Description": "SET incrementally.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "78",
+      "Title": "Landing Gear",
+      "Description": "DOWN.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "79",
+      "Title": "Ground Spoilers",
+      "Description": "ARM.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "80",
+      "Title": "Auto Brake",
+      "Description": "CONFIRM ARMED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "81",
+      "Title": "Stable Approach",
+      "Description": "VERIFY at 1,000 ft AGL.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "82",
+      "Title": "Autopilot",
+      "Description": "OFF below 500 ft.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "83",
+      "Title": "Flare",
+      "Description": "GENTLE backstick.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "84",
+      "Title": "Thrust Levers",
+      "Description": "IDLE at flare.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "85",
+      "Title": "Touchdown",
+      "Description": "MAIN GEAR first.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "86",
+      "Title": "Reverse Thrust",
+      "Description": "SELECT as required.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "87",
+      "Title": "Flaps",
+      "Description": "RETRACT to 0.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "88",
+      "Title": "Ground Spoilers",
+      "Description": "DISARM.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "89",
+      "Title": "Strobe Lights",
+      "Description": "OFF or AUTO.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "90",
+      "Title": "Landing Lights",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "91",
+      "Title": "Transponder",
+      "Description": "STBY.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "92",
+      "Title": "Parking Brake",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "93",
+      "Title": "Engine Master",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "94",
+      "Title": "Seat Belts Sign",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "95",
+      "Title": "Beacon Light",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "96",
+      "Title": "Fuel Pumps",
+      "Description": "ALL OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "97",
+      "Title": "Navigation Lights",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "98",
+      "Title": "ADIRS",
+      "Description": "ALL OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "99",
+      "Title": "APU Master",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "100",
+      "Title": "Battery",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    }
+  ]
+}

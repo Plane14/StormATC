@@ -1,0 +1,559 @@
+{
+  "Id": "bell-407",
+  "Name": "Bell 407",
+  "AircraftType": "B407",
+  "Category": "Preflight",
+  "Description": "Startup and procedures checklist for Bell 407 (Nemeth Designs).",
+  "Steps": [
+    {
+      "Id": "01",
+      "Title": "Weather Briefing",
+      "Description": "Check conditions and forecast.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "02",
+      "Title": "NOTAMs",
+      "Description": "Check for airspace restrictions.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "03",
+      "Title": "Fuel Required",
+      "Description": "Calculate fuel required plus reserve.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "04",
+      "Title": "Weight & Balance",
+      "Description": "Verify within limits.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "05",
+      "Title": "Main Rotor Blades",
+      "Description": "CHECK for security and condition.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "06",
+      "Title": "Tail Rotor",
+      "Description": "CHECK for security.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "07",
+      "Title": "Parking Brake",
+      "Description": "Set.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "08",
+      "Title": "MASTER Switch",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "09",
+      "Title": "Fuel Quantity",
+      "Description": "CHECK VISUALLY.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "10",
+      "Title": "Oil Level",
+      "Description": "CHECK.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "11",
+      "Title": "Preflight Inspection",
+      "Description": "COMPLETE.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "12",
+      "Title": "Seat Belts",
+      "Description": "ADJUST and LOCK.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "13",
+      "Title": "Brakes",
+      "Description": "TEST and SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "14",
+      "Title": "Circuit Breakers",
+      "Description": "CHECK IN.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "15",
+      "Title": "Electrical Equipment",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "16",
+      "Title": "FUEL SELECTOR",
+      "Description": "BOTH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "17",
+      "Title": "Mixture",
+      "Description": "IDLE CUTOFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "18",
+      "Title": "Throttle",
+      "Description": "IDLE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "19",
+      "Title": "Propeller / Rotor Area",
+      "Description": "CLEAR.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "20",
+      "Title": "MASTER Switch",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "21",
+      "Title": "Starter",
+      "Description": "ENGAGE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "22",
+      "Title": "Throttle",
+      "Description": "ROLL OFF as engine starts.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "23",
+      "Title": "Oil Pressure",
+      "Description": "CHECK - verify increases into green arc.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "24",
+      "Title": "AVIONICS Switch",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "25",
+      "Title": "Parking Brake",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "26",
+      "Title": "Flight Controls",
+      "Description": "FREE and CORRECT.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "27",
+      "Title": "Instruments",
+      "Description": "CHECK.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "28",
+      "Title": "Fuel Quantity",
+      "Description": "CHECK.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "29",
+      "Title": "Mixture",
+      "Description": "RICH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "30",
+      "Title": "Trim",
+      "Description": "SET FOR TAKEOFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "31",
+      "Title": "Lights",
+      "Description": "ON as required.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "32",
+      "Title": "Throttle",
+      "Description": "INCREASE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "33",
+      "Title": "Collective",
+      "Description": "RAISE to hover.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "34",
+      "Title": "Cyclic",
+      "Description": "MOVE FORWARD for translation.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "35",
+      "Title": "Airspeed",
+      "Description": "CLIMB AT BEST RATE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "36",
+      "Title": "Power",
+      "Description": "SET FOR CRUISE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "37",
+      "Title": "Trim",
+      "Description": "ADJUST.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "38",
+      "Title": "Fuel",
+      "Description": "MONITOR.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "39",
+      "Title": "Power",
+      "Description": "REDUCE.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "40",
+      "Title": "Mixture",
+      "Description": "ADJUST.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "41",
+      "Title": "Altimeter",
+      "Description": "SET.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "42",
+      "Title": "Seat Belts",
+      "Description": "SECURED.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "43",
+      "Title": "Fuel Selector",
+      "Description": "BOTH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "44",
+      "Title": "Mixture",
+      "Description": "RICH.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "45",
+      "Title": "Landing Lights",
+      "Description": "ON.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "46",
+      "Title": "Airspeed",
+      "Description": "APPROACH SPEED.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "47",
+      "Title": "Collective",
+      "Description": "LOWER for descent.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "48",
+      "Title": "Touchdown",
+      "Description": "GENTLE.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "49",
+      "Title": "Throttle",
+      "Description": "IDLE after touchdown.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "50",
+      "Title": "Lights",
+      "Description": "OFF as required.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "51",
+      "Title": "Throttle",
+      "Description": "ROLL OFF to idle.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "52",
+      "Title": "Mixture",
+      "Description": "IDLE CUTOFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "53",
+      "Title": "MASTER Switch",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "54",
+      "Title": "MASTER Switch",
+      "Description": "OFF.",
+      "Type": "Configuration",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "55",
+      "Title": "Control Lock",
+      "Description": "INSTALL.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "SimVarBinding": null,
+      "EventBinding": null,
+      "IsOptional": false
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+<UserControl x:Class="StormATC.Desktop.Views.ChecklistsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type={x:Type vm:ChecklistsViewModel}}"
+             mc:Ignorable="d"
+             xmlns:vm="clr-namespace:StormATC.Desktop.ViewModels">
+
+  <Grid Background="{StaticResource SurfaceBackgroundBrush}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <Border Grid.Row="0"
+            Background="{StaticResource SurfaceElevatedBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="26,16">
+      <StackPanel MaxWidth="1040" HorizontalAlignment="Left">
+        <TextBlock Text="Checklists"
+                   FontSize="17"
+                   FontWeight="SemiBold" />
+        <TextBlock Text="Standard operating procedures for preflight, takeoff, approach, landing, and emergency phases."
+                   Style="{StaticResource SecondaryTextStyle}"
+                   Margin="0,4,0,0" />
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="1" Margin="26,18,20,10">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="320" />
+      </Grid.ColumnDefinitions>
+
+      <!-- Checklist List -->
+      <Border Grid.Column="0"
+              Style="{StaticResource CardStyle}">
+        <StackPanel>
+          <TextBlock Text="Available Checklists"
+                     Style="{StaticResource SectionHeaderStyle}" />
+
+          <ListBox ItemsSource="{Binding Checklists}"
+                   SelectedItem="{Binding SelectedChecklist}"
+                   DisplayMemberPath="Name"
+                   Height="300"
+                   Margin="0,8,0,0" />
+
+          <Button Content="Load Checklists"
+                  Command="{Binding LoadAsyncCommand}"
+                  Style="{StaticResource PrimaryButtonStyle}"
+                  HorizontalAlignment="Left"
+                  Margin="0,12,0,0" />
+
+          <TextBlock Text="{Binding StatusMessage}"
+                     Style="{StaticResource SecondaryTextStyle}"
+                     Margin="0,8,0,0"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <!-- Checklist Details -->
+      <Border Grid.Column="1"
+              Style="{StaticResource CardStyle}"
+              Margin="12,0,0,0">
+        <StackPanel>
+          <TextBlock Text="Checklist Details"
+                     Style="{StaticResource SectionHeaderStyle}" />
+
+          <TextBlock Text="{Binding SelectedChecklist.Name, FallbackValue='Select a checklist'}"
+                     FontSize="16"
+                     FontWeight="SemiBold"
+                     Margin="0,8,0,0" />
+
+          <TextBlock Text="{Binding SelectedChecklist.Description, FallbackValue='No description available.'}"
+                     Style="{StaticResource SecondaryTextStyle}"
+                     Margin="0,4,0,0"
+                     TextWrapping="Wrap" />
+
+          <Border Grid.Column="1"
+                  Background="{StaticResource SurfaceInsetBrush}"
+                  BorderBrush="{StaticResource BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Padding="12"
+                  Margin="0,12,0,0">
+            <StackPanel>
+              <TextBlock Text="Steps"
+                         Style="{StaticResource LabelTextStyle}" />
+              <ItemsControl ItemsSource="{Binding SelectedChecklist.Steps, FallbackValue={x:Null}}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Padding="0,6"
+                            Margin="0,2,0,0">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="Auto" />
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding Id}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Title}"
+                                   Margin="12,0,0,0" />
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding Type}"
+                                   FontSize="9"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   VerticalAlignment="Center" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Text="{Binding SelectedChecklist.Steps.Count, StringFormat={}{0} step(s)}"
+                         Style="{StaticResource SecondaryTextStyle}"
+                         Margin="0,8,0,0" />
+            </StackPanel>
+          </Border>
+
+          <Button Content="Start Checklist"
+                  Command="{Binding ExecuteSelectedChecklistAsyncCommand}"
+                  Style="{StaticResource PrimaryButtonStyle}"
+                  HorizontalAlignment="Left"
+                  Margin="0,16,0,0" />
+
+          <TextBlock Text="{Binding StatusMessage}"
+                     Style="{StaticResource SecondaryTextStyle}"
+                     Margin="0,8,0,0"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

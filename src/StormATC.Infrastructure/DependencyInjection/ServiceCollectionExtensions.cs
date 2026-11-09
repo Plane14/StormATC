@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using StormATC.Application.Abstractions;
+using StormATC.Application.Checklists;
+using StormATC.Application.Continuous;
+using StormATC.Application.Flight;
 using StormATC.Application.Intent;
 using StormATC.Application.Options;
 using StormATC.Application.Phraseology;
@@ -10,6 +13,7 @@ using StormATC.Application.Sessions;
 using StormATC.Application.Transmissions;
 using StormATC.Domain.Atc;
 using StormATC.Domain.Readback;
+using StormATC.Infrastructure.Checklists;
 using StormATC.Infrastructure.Data;
 using StormATC.Infrastructure.FlightPlanning;
 using StormATC.Infrastructure.Input;
@@ -20,6 +24,7 @@ using StormATC.Infrastructure.Security;
 using StormATC.Infrastructure.SimBrief;
 using StormATC.Infrastructure.Simulator;
 using StormATC.Infrastructure.Storage;
+using StormATC.Infrastructure.Terrain;
 
 namespace StormATC.Infrastructure.DependencyInjection;
 
@@ -224,6 +229,26 @@ public static class ServiceCollectionExtensions
             .Bind(configuration.GetSection(DiagnosticsOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
+        services.AddOptions<FlightOptions>()
+            .Bind(configuration.GetSection(FlightOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<TerrainOptions>()
+            .Bind(configuration.GetSection(TerrainOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<ContinuousFlightOptions>()
+            .Bind(configuration.GetSection(ContinuousFlightOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<ChecklistOptions>()
+            .Bind(configuration.GetSection(ChecklistOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
     }
 
     /// <summary>
@@ -320,5 +345,19 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<ITextToSpeechService>(sp =>
                 sp.GetRequiredService<Speech.DeepgramTextToSpeechService>());
         }
+
+        // --- AI Copilot Features ---------------------------------------------------------
+        // Flight phase orchestration and autopilot services
+        services.AddSingleton<IFlightOrchestrator, FlightOrchestrator>();
+        services.AddSingleton<IAutopilotService, HybridAutopilotService>();
+        services.AddSingleton<IFlightPhaseEngine, FlightPhaseEngine>();
+        services.AddSingleton<IChecklistService, ChecklistService>();
+        services.AddSingleton<IContinuousFlightService, ContinuousFlightService>();
+        services.AddSingleton<ITerrainProvider, MsfsTerrainProvider>();
+        services.AddSingleton<IChecklistRepository, JsonChecklistRepository>();
+
+        // Hosted service for the flight orchestrator tick loop
+        services.AddSingleton<IHostedService>(sp =>
+            sp.GetRequiredService<IFlightOrchestrator>());
     }
 }

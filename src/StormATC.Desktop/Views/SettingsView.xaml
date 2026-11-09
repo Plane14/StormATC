@@ -391,6 +391,211 @@
                 </Grid>
               </StackPanel>
             </Border>
+
+            <!-- ==================== AI Copilot Features ==================== -->
+            <Border Style="{StaticResource CardStyle}">
+              <StackPanel>
+                <Grid Margin="0,0,0,12">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Margin="0,0,20,0">
+                    <TextBlock Text="AI Copilot Features"
+                               Style="{StaticResource SectionHeaderStyle}"
+                               Margin="0" />
+                    <TextBlock Text="Optional flight-phase autopilot, terrain awareness, checklists, and continuous flight mission support."
+                               Style="{StaticResource SecondaryTextStyle}"
+                               Margin="0,4,0,0" />
+                  </StackPanel>
+                  <Border Grid.Column="1"
+                          Background="{StaticResource StatusWarnSubtleBrush}"
+                          CornerRadius="8"
+                          Padding="9,4"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Top">
+                    <TextBlock Text="OPT IN · REQUIRES RESTART FOR SOME CHANGES"
+                               Style="{StaticResource LabelTextStyle}"
+                               Foreground="{StaticResource StatusWarnBrush}" />
+                  </Border>
+                </Grid>
+
+                <CheckBox Content="Enable AI Copilot Features"
+                          IsChecked="{Binding EnableAICopilotFeatures}"
+                          FontWeight="SemiBold"
+                          Margin="0,0,0,12" />
+                <TextBlock Text="When enabled, additional tabs appear in the main window: Checklists, Flight Monitor, and Mission Builder."
+                           Style="{StaticResource SecondaryTextStyle}"
+                           Margin="0,0,0,12" />
+
+                <!-- Flight Performance -->
+                <Border Background="{StaticResource SurfaceInsetBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12,10"
+                        Margin="0,0,0,14">
+                  <StackPanel>
+                    <TextBlock Text="FLIGHT PERFORMANCE" Style="{StaticResource LabelTextStyle}" />
+                    <Grid Margin="0,8,0,0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="0">
+                        <TextBlock Text="DEFAULT CRUISE SPEED (KT)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding DefaultCruiseSpeedKt, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1">
+                        <TextBlock Text="DEFAULT CLIMB RATE (FPM)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding DefaultClimbRateFpm, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="2">
+                        <TextBlock Text="DEFAULT DESCENT RATE (FPM)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding DefaultDescentRateFpm, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <!-- Terrain Analysis -->
+                <Border Background="{StaticResource SurfaceInsetBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12,10"
+                        Margin="0,0,0,14">
+                  <StackPanel>
+                    <TextBlock Text="TERRAIN ANALYSIS" Style="{StaticResource LabelTextStyle}" />
+                    <Grid Margin="0,8,0,0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="0">
+                        <TextBlock Text="PRE-FLIGHT SAMPLE SPACING (NM)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding PreFlightSampleSpacingNm, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1">
+                        <TextBlock Text="GRID WIDTH (POINTS)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding InFlightGridWidthPoints, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="2">
+                        <TextBlock Text="GRID HEIGHT (POINTS)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding InFlightGridHeightPoints, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="3">
+                        <TextBlock Text="LOOK-AHEAD (NM)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding InFlightLookAheadNm, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                    </StackPanel>
+                    <Grid Margin="0,8,0,0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="0">
+                        <TextBlock Text="UPDATE INTERVAL (SEC)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding InFlightUpdateInterval.TotalSeconds, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Margin="24,0,0,0">
+                        <TextBlock Text="Terrain grid update frequency while in flight."
+                                   Style="{StaticResource SecondaryTextStyle}"
+                                   TextWrapping="Wrap" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+
+                <!-- Continuous Flight -->
+                <Border Background="{StaticResource SurfaceInsetBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12,10"
+                        Margin="0,0,0,14">
+                  <StackPanel>
+                    <TextBlock Text="CONTINUOUS FLIGHT" Style="{StaticResource LabelTextStyle}" />
+                    <Grid Margin="0,8,0,0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <StackPanel Grid.Column="0">
+                        <TextBlock Text="MIN RANGE (NM)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding MinRangeNm, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1">
+                        <TextBlock Text="MAX RANGE (NM)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding MaxRangeNm, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="2">
+                        <TextBlock Text="SERVICE TIME (MIN)" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding ServiceTimeMinutes, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="3">
+                        <TextBlock Text="RESERVE FACTOR" Style="{StaticResource LabelTextStyle}" />
+                        <TextBox Text="{Binding ReserveFactor, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"
+                                 HorizontalAlignment="Left" />
+                      </StackPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <!-- Checklists -->
+                <Border Background="{StaticResource SurfaceInsetBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12,10">
+                  <StackPanel>
+                    <Grid Margin="0,0,0,8">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="CHECKLISTS" Style="{StaticResource LabelTextStyle}" />
+                      <CheckBox Grid.Column="1" Content="Enabled"
+                                IsChecked="{Binding ChecklistEnabled}"
+                                VerticalAlignment="Center" />
+                    </Grid>
+                    <TextBlock Text="CHECKLIST DIRECTORY" Style="{StaticResource LabelTextStyle}" />
+                    <TextBox Text="{Binding ChecklistDirectory, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,8" />
+                    <TextBlock Text="Directory under the application data folder containing checklist definition JSON files."
+                               Style="{StaticResource SecondaryTextStyle}"
+                               TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
       </TabItem>
