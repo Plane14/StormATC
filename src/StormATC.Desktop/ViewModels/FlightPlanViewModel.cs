@@ -45,6 +45,9 @@ public sealed partial class FlightPlanViewModel : ObservableObject, IRefreshable
     private string _departure = "—";
 
     [ObservableProperty]
+    private string _flightRules = "—";
+
+    [ObservableProperty]
     private string _destination = "—";
 
     [ObservableProperty]
@@ -271,6 +274,14 @@ public sealed partial class FlightPlanViewModel : ObservableObject, IRefreshable
         AircraftType = plan.AircraftIcaoType ?? "—";
         Departure = plan.DepartureIcao;
         Destination = plan.DestinationIcao;
+        FlightRules = plan.FlightRules switch
+        {
+            StormATC.Domain.FlightRules.Ifr => "IFR",
+            StormATC.Domain.FlightRules.Vfr => "VFR",
+            StormATC.Domain.FlightRules.IfrThenVfr => "IFR/VFR",
+            StormATC.Domain.FlightRules.VfrThenIfr => "VFR/IFR",
+            _ => "—",
+        };
         Alternates = plan.AlternateIcaos.Count > 0 ? string.Join(", ", plan.AlternateIcaos) : "None filed";
         CruiseAltitude = plan.CruiseAltitude?.ToDisplay() ?? "—";
         DepartureRunway = plan.DepartureRunway?.ToDisplay() ?? "—";

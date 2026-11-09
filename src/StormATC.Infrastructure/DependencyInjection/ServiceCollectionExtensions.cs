@@ -23,6 +23,7 @@ using StormATC.Infrastructure.Storage;
 using StormATC.Application.Checklists;
 using StormATC.Application.Continuous;
 using StormATC.Application.Flight;
+using StormATC.Infrastructure.Autofly;
 using StormATC.Infrastructure.Checklists;
 using StormATC.Infrastructure.Terrain;
 
@@ -252,6 +253,15 @@ public static class ServiceCollectionExtensions
                 "ContinuousFlight:MinRangeNm must not exceed MaxRangeNm.")
             .ValidateOnStart();
 
+        services.AddOptions<AutoflyOptions>()
+            .Bind(configuration.GetSection(AutoflyOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(
+                options => options.MaximumStateAge >= TimeSpan.FromSeconds(1)
+                    && options.MaximumStateAge <= TimeSpan.FromMinutes(5),
+                "Autofly:MaximumStateAge must be between 1 second and 5 minutes.")
+            .ValidateOnStart();
+
         services.AddOptions<ChecklistOptions>()
             .Bind(configuration.GetSection(ChecklistOptions.SectionName))
             .ValidateDataAnnotations()
@@ -362,9 +372,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IFlightOrchestrator>(sp => sp.GetRequiredService<FlightOrchestrator>());
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<FlightOrchestrator>());
         services.AddSingleton<IAutopilotService, HybridAutopilotService>();
+        services.AddSingleton<IAircraftAutoflyProfileProvider, JsonAircraftAutoflyProfileProvider>();
+        services.AddSingleton<IAutopilotActuator, AutopilotActuatorService>();
         services.AddSingleton<IFlightPhaseEngine, FlightPhaseEngine>();
         services.AddSingleton<IChecklistService, ChecklistService>();
         services.AddSingleton<IContinuousFlightService, ContinuousFlightService>();
+        services.AddHostedService<FlightChecklistRunner>();
+        services.AddHostedService<ContinuousFlightRunner>();
         services.AddHttpClient<Terrain.OpenMeteoTerrainProvider>()
             .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler
             {

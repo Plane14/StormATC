@@ -133,6 +133,7 @@ public sealed class ContinuousFlightService : IContinuousFlightService
             Callsign = callsign,
             DepartureIcao = departureIcao,
             DestinationIcao = destination.Icao,
+            FlightRules = session.FlightPlan?.FlightRules ?? Domain.FlightRules.Ifr,
             CruiseAltitude = Altitude.FromFeet(8000),
             GeneratedAt = DateTimeOffset.UtcNow,
             SourceIdentifier = "ContinuousFlight",

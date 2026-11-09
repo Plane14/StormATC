@@ -118,6 +118,41 @@ public interface IChecklistService
     IReadOnlyList<ChecklistExecutionState> GetActiveExecutions();
 }
 
+/// <summary>Autofly actuator - translates control targets into simulator commands.</summary>
+public interface IAutopilotActuator
+{
+    /// <summary>True while autofly believes the aircraft autopilot is engaged.</summary>
+    bool IsEngaged { get; }
+
+    /// <summary>A short human-readable status for the UI.</summary>
+    string StatusMessage { get; }
+
+    /// <summary>The most recent command delivery result, when one exists.</summary>
+    AutopilotCommandResult? LastResult { get; }
+
+    /// <summary>Enables or disables command delivery. Disabling disengages safely.</summary>
+    Task SetEnabledAsync(bool enabled, CancellationToken ct = default);
+
+    /// <summary>Computes and applies the commands for one control-target update.</summary>
+    Task UpdateAsync(
+        Domain.State.ControlTargets targets,
+        Domain.State.FlightPhase phase,
+        Domain.Aircraft.AircraftState aircraftState,
+        CancellationToken ct = default);
+
+    /// <summary>Disengages the aircraft autopilot and pauses command delivery.</summary>
+    Task DisengageAsync(string reason, CancellationToken ct = default);
+}
+
+/// <summary>Aircraft autofly profile provider.</summary>
+public interface IAircraftAutoflyProfileProvider
+{
+    /// <summary>Returns the best profile for the current aircraft title.</summary>
+    Task<Domain.Autofly.AircraftAutoflyProfile> GetProfileAsync(
+        Domain.Aircraft.AircraftState aircraftState,
+        CancellationToken ct = default);
+}
+
 /// <summary>Checklist repository - load/save checklist definitions.</summary>
 public interface IChecklistRepository
 {

@@ -221,6 +221,21 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
     }
 
     /// <inheritdoc />
+    public Task<AutopilotCommandResult> ApplyAutopilotCommandAsync(
+        AutopilotCommand command,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return Task.FromResult(new AutopilotCommandResult
+        {
+            Status = AutopilotCommandStatus.Unsupported,
+            Message = SdkUnavailableMessage,
+        });
+    }
+
+    /// <inheritdoc />
     public Task ConnectAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -290,6 +305,10 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
     private readonly AutoResetEvent _airportRequestSignal = new(false);
     private readonly ConcurrentQueue<RadioTuneRequest> _radioTuneQueue = new();
     private readonly AutoResetEvent _radioTuneSignal = new(false);
+    private readonly ConcurrentQueue<ControlCommandRequest> _controlCommandQueue = new();
+    private readonly AutoResetEvent _controlCommandSignal = new(false);
+    private readonly Dictionary<string, int> _mappedControlEvents = new(StringComparer.OrdinalIgnoreCase);
+    private int _nextControlEventId = 1000;
 
     // SimConnect is not thread-safe. The long-running worker is the sole owner of these objects:
     // it opens the connection, receives every callback, reconnects, and disposes the handle.
@@ -317,6 +336,10 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
     private sealed record RadioTuneRequest(
         Frequency Frequency,
         TaskCompletionSource<bool> Completion);
+
+    private sealed record ControlCommandRequest(
+        AutopilotCommand Command,
+        TaskCompletionSource<AutopilotCommandResult> Completion);
 
     /// <summary>
     /// The simulator variables StormATC reads, laid out to match <see cref="AircraftStateStruct"/>.
@@ -590,6 +613,47 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
     }
 
     /// <inheritdoc />
+    public async Task<AutopilotCommandResult> ApplyAutopilotCommandAsync(
+        AutopilotCommand command,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        cancellationToken.ThrowIfCancellationRequested();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (ConnectionState != SimulatorConnectionState.Connected)
+        {
+            return new AutopilotCommandResult
+            {
+                Status = AutopilotCommandStatus.Disconnected,
+                Message = "SimConnect is not connected to Microsoft Flight Simulator.",
+            };
+        }
+
+        var completion = new TaskCompletionSource<AutopilotCommandResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        _controlCommandQueue.Enqueue(new ControlCommandRequest(command, completion));
+        _controlCommandSignal.Set();
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(3));
+
+        try
+        {
+            return await completion.Task.WaitAsync(timeout.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            completion.TrySetResult(new AutopilotCommandResult
+            {
+                Status = AutopilotCommandStatus.Failed,
+                Message = "Timed out waiting for the SimConnect worker to apply the command.",
+            });
+            return await completion.Task.ConfigureAwait(false);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -796,6 +860,7 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
         _quitReceived = false;
         _callbackFailureKind = SimulatorConnectionFailureKind.None;
         _callbackFailureMessage = null;
+        _mappedControlEvents.Clear();
 
         // With no HWND, the SDK-supported event handle signals exactly when ReceiveMessage
         // should be called. This avoids polling and keeps every SimConnect call on one thread.
@@ -966,12 +1031,18 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
     private PumpExitReason PumpConnectedSimulator(CancellationToken cancellationToken)
     {
         WaitHandle[] handles =
-            [_messageSignal!, _airportRequestSignal, _radioTuneSignal, cancellationToken.WaitHandle];
+        [
+            _messageSignal!,
+            _airportRequestSignal,
+            _radioTuneSignal,
+            _controlCommandSignal,
+            cancellationToken.WaitHandle,
+        ];
 
         while (true)
         {
             int signalled = WaitHandle.WaitAny(handles, TimeSpan.FromSeconds(1));
-            if (signalled == 3)
+            if (signalled == 4)
             {
                 return PumpExitReason.Cancelled;
             }
@@ -983,6 +1054,10 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
             else if (signalled == 2)
             {
                 ApplyPendingRadioTunes();
+            }
+            else if (signalled == 3)
+            {
+                ApplyPendingControlCommands();
             }
             else if (signalled == 0)
             {
@@ -1059,6 +1134,103 @@ public sealed partial class MsfsSimConnectConnector : ISimulatorConnector
                     request.Frequency.ToDisplay());
             }
         }
+    }
+
+    private void ApplyPendingControlCommands()
+    {
+        while (_controlCommandQueue.TryDequeue(out ControlCommandRequest? request))
+        {
+            if (request.Completion.Task.IsCompleted)
+            {
+                continue;
+            }
+
+            if (_simConnect is null)
+            {
+                request.Completion.TrySetResult(new AutopilotCommandResult
+                {
+                    Status = AutopilotCommandStatus.Disconnected,
+                    Message = "The SimConnect connection is no longer available.",
+                });
+                continue;
+            }
+
+            try
+            {
+                request.Completion.TrySetResult(ApplyControlCommand(request.Command));
+            }
+            catch (Exception ex)
+            {
+                request.Completion.TrySetResult(new AutopilotCommandResult
+                {
+                    Status = AutopilotCommandStatus.Failed,
+                    Message = ex.GetBaseException().Message,
+                });
+                _logger.LogWarning(ex, "Applying an MSFS control command failed.");
+            }
+        }
+    }
+
+    private AutopilotCommandResult ApplyControlCommand(AutopilotCommand command)
+    {
+        if (command.Kind == AutopilotCommandKind.SetVariable)
+        {
+            // Variable writes need a registered writable data definition per variable and unit
+            // contract. StormATC currently expresses aircraft-specific controls as events, so an
+            // unbound variable write is reported honestly rather than guessed at.
+            return new AutopilotCommandResult
+            {
+                Status = AutopilotCommandStatus.Unsupported,
+                Message = "This build cannot write SimConnect variables directly; use an event binding.",
+            };
+        }
+
+        string? eventName = command.EventName;
+        if (string.IsNullOrWhiteSpace(eventName))
+        {
+            return new AutopilotCommandResult
+            {
+                Status = AutopilotCommandStatus.Unsupported,
+                Message = $"No SimConnect event binding is configured for {command.Kind}.",
+            };
+        }
+
+        int clientEventId = EnsureControlEventMapped(eventName.Trim());
+        uint eventData = command.EventValue is double value && double.IsFinite(value)
+            ? checked((uint)Math.Clamp(Math.Round(value), 0, uint.MaxValue))
+            : 0;
+
+        _simConnect!.TransmitClientEvent(
+            SimConnect.SIMCONNECT_OBJECT_ID_USER,
+            clientEventId,
+            eventData,
+            NotificationGroups.Highest,
+            SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+
+        _logger.LogInformation(
+            "Sent MSFS event {Event} with value {Value} for {Kind}.",
+            eventName,
+            eventData,
+            command.Kind);
+
+        return new AutopilotCommandResult
+        {
+            Status = AutopilotCommandStatus.Applied,
+            Message = $"Sent {eventName}.",
+        };
+    }
+
+    private int EnsureControlEventMapped(string eventName)
+    {
+        if (_mappedControlEvents.TryGetValue(eventName, out int existing))
+        {
+            return existing;
+        }
+
+        int clientEventId = _nextControlEventId++;
+        _simConnect!.MapClientEventToSimEvent(clientEventId, eventName);
+        _mappedControlEvents[eventName] = clientEventId;
+        return clientEventId;
     }
 
     private void RequestNearbyTrafficIfDue()

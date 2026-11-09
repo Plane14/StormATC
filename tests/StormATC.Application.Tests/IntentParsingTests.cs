@@ -95,6 +95,9 @@ public class DeterministicPilotIntentParserTests
 {
     [Theory]
     [InlineData("storm one two three request ifr clearance", PilotIntentType.RequestIFRClearance)]
+    [InlineData("storm one two three request vfr clearance", PilotIntentType.RequestVfrClearance)]
+    [InlineData("storm one two three vfr clearance please", PilotIntentType.RequestVfrClearance)]
+    [InlineData("storm one two three request vfr", PilotIntentType.RequestVfrClearance)]
     [InlineData("storm one two three request pushback", PilotIntentType.RequestPushback)]
     [InlineData("sorry what s what s the frequency", PilotIntentType.RequestFrequency)]
     [InlineData("ground frequency please", PilotIntentType.RequestFrequency)]

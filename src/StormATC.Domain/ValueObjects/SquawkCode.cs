@@ -25,6 +25,9 @@ public readonly record struct SquawkCode
     /// <summary>Conspicuity code used when no discrete code has been assigned.</summary>
     public static readonly SquawkCode Conspicuity = new("7000");
 
+    /// <summary>VFR conspicuity code used when no discrete code has been assigned.</summary>
+    public static readonly SquawkCode Vfr = new("1200");
+
     private SquawkCode(string digits) => Digits = digits;
 
     /// <summary>The four octal digits, for example <c>"4271"</c>.</summary>

@@ -555,6 +555,31 @@ public sealed class ContinuousFlightOptions
     public double ReserveFactor { get; init; } = 0.9;
 }
 
+/// <summary>User-aircraft autofly settings.</summary>
+public sealed class AutoflyOptions
+{
+    public const string SectionName = "Autofly";
+
+    /// <summary>When true, StormATC may command the user aircraft through the simulator connector.</summary>
+    public bool Enabled { get; init; }
+
+    /// <summary>
+    /// When true, a manual autopilot disconnect or an aircraft-side override pauses autofly
+    /// until the pilot re-engages it. StormATC never fights the pilot.
+    /// </summary>
+    public bool ManualOverridePausesAutofly { get; init; } = true;
+
+    /// <summary>
+    /// When true, autofly engages the aircraft autopilot/flight director before sending
+    /// heading, altitude, and speed targets. When false, targets are still computed and shown
+    /// but only low-level commands are attempted.
+    /// </summary>
+    public bool EngageSimulatorAutopilot { get; init; } = true;
+
+    /// <summary>Minimum age of an aircraft snapshot before autofly will command it.</summary>
+    public TimeSpan MaximumStateAge { get; init; } = TimeSpan.FromSeconds(10);
+}
+
 /// <summary>Checklist system configuration.</summary>
 public sealed class ChecklistOptions
 {

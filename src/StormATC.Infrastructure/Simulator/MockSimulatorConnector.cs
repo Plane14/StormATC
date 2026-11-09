@@ -260,6 +260,96 @@ public sealed class MockSimulatorConnector(
         return Task.FromResult(true);
     }
 
+    /// <summary>Autopilot commands accepted by the mock, in order.</summary>
+    public IReadOnlyList<AutopilotCommand> AppliedAutopilotCommands
+    {
+        get
+        {
+            lock (_stateLock)
+            {
+                return [.. _appliedAutopilotCommands];
+            }
+        }
+    }
+
+    private readonly List<AutopilotCommand> _appliedAutopilotCommands = [];
+
+    /// <inheritdoc />
+    public Task<AutopilotCommandResult> ApplyAutopilotCommandAsync(
+        AutopilotCommand command,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        cancellationToken.ThrowIfCancellationRequested();
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (ConnectionState != SimulatorConnectionState.Connected)
+        {
+            return Task.FromResult(new AutopilotCommandResult
+            {
+                Status = AutopilotCommandStatus.Disconnected,
+                Message = "The mock simulator is not connected.",
+            });
+        }
+
+        lock (_stateLock)
+        {
+            _appliedAutopilotCommands.Add(command);
+            _model = ApplyAutopilotCommand(_model, command);
+        }
+
+        PublishState();
+        return Task.FromResult(new AutopilotCommandResult
+        {
+            Status = AutopilotCommandStatus.Applied,
+            Message = "Applied by the mock simulator.",
+        });
+    }
+
+    private static MockAircraftModel ApplyAutopilotCommand(
+        MockAircraftModel model,
+        AutopilotCommand command) => command.Kind switch
+    {
+        AutopilotCommandKind.EngageAutopilot => model with { AutopilotEngaged = true },
+        AutopilotCommandKind.DisengageAutopilot => model with { AutopilotEngaged = false },
+        AutopilotCommandKind.SetHeading when command.HeadingDegrees is double heading =>
+            model with { HeadingDegrees = heading, TargetHeadingDegrees = heading },
+        AutopilotCommandKind.SetAltitude when command.AltitudeFeet is double altitude =>
+            model with { AltitudeFeet = altitude, TargetAltitudeFeet = altitude },
+        AutopilotCommandKind.SetVerticalSpeed when command.VerticalSpeedFeetPerMinute is double vs =>
+            model with { VerticalSpeedFeetPerMinute = vs },
+        AutopilotCommandKind.SetSpeed when command.SpeedKnots is double speed =>
+            model with { GroundSpeedKnots = speed },
+        AutopilotCommandKind.TriggerEvent => ApplyTriggerEvent(model, command),
+        AutopilotCommandKind.SetVariable => model,
+        _ => model,
+    };
+
+    private static MockAircraftModel ApplyTriggerEvent(
+        MockAircraftModel model,
+        AutopilotCommand command)
+    {
+        // The mock recognises StormATC's canonical fallback event names so autofly
+        // configuration commands are visible in mock state even without an aircraft profile.
+        return command.EventName switch
+        {
+            "STORMATC_GEAR_DOWN" => model with { GearHandleDown = true },
+            "STORMATC_GEAR_UP" => model with { GearHandleDown = false },
+            "STORMATC_PARKING_BRAKE_ON" => model with { ParkingBrakeSet = true },
+            "STORMATC_PARKING_BRAKE_OFF" => model with { ParkingBrakeSet = false },
+            "STORMATC_ENGINES_START" => model with { EnginesRunning = true },
+            "STORMATC_ENGINES_STOP" => model with { EnginesRunning = false },
+            "STORMATC_PUSHBACK" => model.Stage == MockFlightStage.AtStand
+                ? model.TransitionTo(MockFlightStage.PushedBack)
+                : model,
+            "STORMATC_THROTTLE" => model,
+            var name when name is not null && name.StartsWith("STORMATC_FLAPS_", StringComparison.Ordinal)
+                && int.TryParse(name["STORMATC_FLAPS_".Length..], out int detent)
+                => model with { FlapsHandleIndex = detent },
+            _ => model,
+        };
+    }
+
     /// <summary>
     /// Moves the aircraft onto the runway surface without a clearance, to exercise the
     /// hold-short violation path.
@@ -422,6 +512,10 @@ internal sealed record MockAircraftModel
     public required bool EnginesRunning { get; init; }
     public Frequency Com1Active { get; init; } = Frequency.FromMegahertz(121.800m);
     public SquawkCode Squawk { get; init; } = SquawkCode.Conspicuity;
+    public bool AutopilotEngaged { get; init; }
+    public double? TargetHeadingDegrees { get; init; }
+    public bool GearHandleDown { get; init; } = true;
+    public int FlapsHandleIndex { get; init; }
 
     /// <summary>Creates the initial state: parked at stand A1, STMR, cold.</summary>
     public static MockAircraftModel AtStand() => new()
@@ -706,6 +800,9 @@ internal sealed record MockAircraftModel
         IsOnGround = IsOnGround,
         ParkingBrakeSet = ParkingBrakeSet,
         EnginesRunning = EnginesRunning,
+        AutopilotEngaged = AutopilotEngaged,
+        GearHandleDown = GearHandleDown,
+        FlapsHandleIndex = FlapsHandleIndex,
         AircraftTitle = "StormATC Mock A320",
         Radio = new RadioState
         {

@@ -1,0 +1,44 @@
+{
+  "name": "Cessna 172 Skyhawk",
+  "titleMatches": [ "172", "cessna 172", "skyhawk", "c172" ],
+  "flightTested": false,
+  "borrowedProfile": true,
+  "canAutofly": true,
+  "performance": {
+    "rotationSpeedKnots": 55,
+    "climbSpeedKnots": 74,
+    "cruiseSpeedKnots": 105,
+    "downwindSpeedKnots": 70,
+    "baseSpeedKnots": 65,
+    "approachSpeedKnots": 60,
+    "touchdownSpeedKnots": 55,
+    "goAroundSpeedKnots": 70,
+    "takeoffFlaps": 1,
+    "downwindFlaps": 1,
+    "baseFlaps": 2,
+    "landingFlaps": 3,
+    "maxPitchUpDegrees": 15,
+    "maxBankDegrees": 30,
+    "climbRateFpm": 700,
+    "descentRateFpm": 500
+  },
+  "events": {
+    "engage": "K:AUTOPILOT_ON",
+    "disengage": "K:AUTOPILOT_OFF",
+    "heading": "K:HEADING_BUG_SET",
+    "headingMode": "K:AP_HDG_HOLD_ON",
+    "altitude": "K:AP_ALT_VAR_SET_ENGLISH",
+    "altitudeMode": "K:AP_ALT_HOLD_ON",
+    "verticalSpeed": "K:AP_VS_VAR_SET_ENGLISH",
+    "vsMode": "K:AP_PANEL_VS_ON",
+    "speed": "K:AP_SPD_VAR_SET",
+    "speedMode": "K:AP_IAS_HOLD_ON"
+  },
+  "flapEvents": {
+    "0": "K:FLAPS_0",
+    "1": "K:FLAPS_1",
+    "2": "K:FLAPS_2",
+    "3": "K:FLAPS_3",
+    "4": "K:FLAPS_FULL"
+  }
+}

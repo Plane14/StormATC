@@ -1,0 +1,38 @@
+{
+  "name": "Airbus A320 family",
+  "titleMatches": [ "a320", "a321", "a319", "a318", "ceo a320", "neo a320" ],
+  "flightTested": false,
+  "borrowedProfile": true,
+  "canAutofly": true,
+  "performance": {
+    "rotationSpeedKnots": 130,
+    "climbSpeedKnots": 180,
+    "cruiseSpeedKnots": 230,
+    "downwindSpeedKnots": 170,
+    "baseSpeedKnots": 160,
+    "approachSpeedKnots": 140,
+    "touchdownSpeedKnots": 135,
+    "goAroundSpeedKnots": 150,
+    "takeoffFlaps": 2,
+    "downwindFlaps": 2,
+    "baseFlaps": 3,
+    "landingFlaps": 4,
+    "maxPitchUpDegrees": 15,
+    "maxBankDegrees": 25,
+    "climbRateFpm": 1800,
+    "descentRateFpm": 1500
+  },
+  "events": {
+    "engage": "K:AUTOFLIGHT_AP_ON",
+    "disengage": "K:AUTOFLIGHT_AP_OFF",
+    "heading": "K:HEADING_HOLD",
+    "headingMode": "K:HEADING_HOLD",
+    "altitude": "K:ALT_HOLD",
+    "altitudeMode": "K:ALT_HOLD",
+    "verticalSpeed": "K:V_S_FPA",
+    "vsMode": "K:V_S_FPA",
+    "speed": "K:SPD_HOLD",
+    "speedMode": "K:SPD_HOLD"
+  },
+  "flapEvents": {}
+}

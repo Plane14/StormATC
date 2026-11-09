@@ -70,13 +70,19 @@ public static class AtcGuidanceAdvisor
             FlightPhase.Disconnected =>
                 new("Wait for the simulator", "StormATC needs a live or mock aircraft state.", string.Empty),
 
-            FlightPhase.Preflight or FlightPhase.ClearanceRequested when session.IfrClearance is null =>
-                new(
-                    "Request IFR clearance",
-                    "Call Delivery when you are ready to copy.",
-                    $"{spokenCallsign}, request IFR clearance"),
+            FlightPhase.Preflight or FlightPhase.ClearanceRequested
+                when session.IfrClearance is null && session.VfrClearance is null =>
+                session.FlightPlan?.FlightRules == FlightRules.Vfr
+                    ? new(
+                        "Request VFR clearance",
+                        "Call Delivery when you are ready to depart under visual flight rules.",
+                        $"{spokenCallsign}, request VFR clearance")
+                    : new(
+                        "Request IFR clearance",
+                        "Call Delivery when you are ready to copy.",
+                        $"{spokenCallsign}, request IFR clearance"),
 
-            FlightPhase.IFRClearanceIssued =>
+            FlightPhase.IFRClearanceIssued or FlightPhase.VfrClearanceIssued =>
                 new(
                     "Request pushback and start",
                     "Your IFR clearance is acknowledged. Remain on this frequency unless handed off.",

@@ -91,6 +91,29 @@
           </StackPanel>
         </Border>
 
+        <!-- Autofly Panel -->
+        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14">
+          <StackPanel>
+            <TextBlock Text="USER-AIRCRAFT AUTOFLY" Style="{StaticResource SectionHeaderStyle}" />
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+              <CheckBox Content="Enable autofly"
+                        IsChecked="{Binding AutoflyEnabled, Mode=TwoWay}"
+                        VerticalAlignment="Center" />
+              <Button Content="Apply"
+                      Command="{Binding ToggleAutoflyCommand}"
+                      Margin="12,0,0,0"
+                      Padding="14,4" />
+            </StackPanel>
+            <TextBlock Text="{Binding AutoflyStatus}"
+                       Style="{StaticResource SecondaryTextStyle}"
+                       Margin="0,8,0,0" />
+            <TextBlock Text="Autofly follows published airport geometry through startup, pushback, taxi, takeoff, flight, approach, landing, taxi-in, parking, and shutdown. It never overrides a manual disconnect, and every simulator command without an aircraft-profile binding is reported as unsupported."
+                       Style="{StaticResource SecondaryTextStyle}"
+                       Margin="0,4,0,0"
+                       TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+
         <!-- Terrain Awareness Panel -->
         <Border Background="{StaticResource StatusWarnSubtleBrush}"
                 BorderBrush="{StaticResource StatusWarnBrush}"

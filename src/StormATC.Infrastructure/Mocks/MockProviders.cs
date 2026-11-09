@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using StormATC.Application.Abstractions;
+using StormATC.Domain;
 using StormATC.Domain.Aircraft;
 using StormATC.Domain.Atc;
 using StormATC.Domain.FlightPlanning;
@@ -189,6 +190,7 @@ public sealed class MockFlightPlanProvider(
             FlightNumber = ReadOptionalString(root, "flightNumber"),
             AircraftIcaoType = ReadOptionalString(root, "aircraftIcaoType"),
             Registration = ReadOptionalString(root, "registration"),
+            FlightRules = ReadFlightRules(ReadOptionalString(root, "flightRules")),
             DepartureIcao = root.GetProperty("departureIcao").GetString() ?? "STMR",
             DestinationIcao = root.GetProperty("destinationIcao").GetString() ?? "STMD",
             AlternateIcaos = alternates,
@@ -223,6 +225,15 @@ public sealed class MockFlightPlanProvider(
             element.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.Number
                 ? value.GetDouble()
                 : null;
+
+        static FlightRules ReadFlightRules(string? value) => value?.Trim().ToUpperInvariant() switch
+        {
+            "V" or "VFR" => FlightRules.Vfr,
+            "I" or "IFR" => FlightRules.Ifr,
+            "Y" or "VFR-IFR" => FlightRules.VfrThenIfr,
+            "Z" or "IFR-VFR" => FlightRules.IfrThenVfr,
+            _ => FlightRules.Unknown,
+        };
     }
 }
 

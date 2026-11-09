@@ -51,6 +51,9 @@ public sealed record AtcSession
     /// <summary>The IFR clearance, once issued.</summary>
     public Clearance? IfrClearance { get; init; }
 
+    /// <summary>The VFR clearance, once issued.</summary>
+    public Clearance? VfrClearance { get; init; }
+
     /// <summary>The current taxi clearance, outbound or inbound.</summary>
     public Clearance? TaxiClearance { get; init; }
 
@@ -156,6 +159,11 @@ public sealed record AtcSession
                 ClearedAltitude = clearance.InitialAltitude ?? ClearedAltitude,
                 AssignedDepartureRunway = clearance.Runway ?? AssignedDepartureRunway,
             },
+            ClearanceType.VfrClearance => updated with
+            {
+                VfrClearance = clearance,
+                AssignedDepartureRunway = clearance.Runway ?? AssignedDepartureRunway,
+            },
             // A taxi-to-stand clearance names the arrival stand, which is not the stand the
             // aircraft departed from. Recording it here is what lets the engine recognise
             // arrival at the correct one.
@@ -215,6 +223,7 @@ public sealed record AtcSession
             PendingReadback = null,
             ClearanceHistory = history,
             IfrClearance = AcknowledgeIfMatching(IfrClearance, clearanceId, at),
+            VfrClearance = AcknowledgeIfMatching(VfrClearance, clearanceId, at),
             TaxiClearance = AcknowledgeIfMatching(TaxiClearance, clearanceId, at),
             DepartureClearance = AcknowledgeIfMatching(DepartureClearance, clearanceId, at),
             ArrivalClearance = AcknowledgeIfMatching(ArrivalClearance, clearanceId, at),

@@ -73,7 +73,16 @@ See [docs/architecture.md](docs/architecture.md).
 - **Hardware push-to-talk**: bind a button on a USB joystick, yoke, gamepad, or HOTAS
 - **Accent-aware voice trainer**: personal keyterms and explicit corrections without storing audio
 - **Typed fallback**: use the complete ATC pipeline without a microphone or cloud account
-- **Deterministic ATC engine**: clearance delivery, ground, tower, departure, centre, approach
+- **Deterministic ATC engine**: clearance delivery, ground, tower, departure, centre, approach,
+  plus VFR clearances (squawk 1200, no SID/STAR required)
+- **User-aircraft autofly** (opt-in): follows published airport geometry through startup,
+  pushback, taxi-out, line-up, takeoff, climb, cruise, descent, approach, rollout, taxi-in,
+  parking, and shutdown — using per-aircraft performance profiles and SimConnect event
+  bindings, never fighting a manual disconnect
+- **Checklist automation**: bundled per-aircraft checklists (Preflight through Shutdown) run
+  alongside autofly, firing configured SimConnect events and ticking steps in order
+- **Optional continuous flights**: pick a range band and StormATC plans the next leg after
+  each turnaround automatically
 - **Real readback checking**: item by item, with targeted corrections naming the value you got wrong
 - **Live MSFS taxi routing**: airport parking, taxi points, names, paths, runways, and frequencies
   come from the simulator's Facility Data API; routes begin at the aircraft's live surface

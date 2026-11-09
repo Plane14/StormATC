@@ -15,6 +15,7 @@ using StormATC.Domain.Sessions;
 using StormATC.Domain.State;
 using StormATC.Domain.ValueObjects;
 using IFlightPhaseEngine = StormATC.Domain.Atc.IFlightPhaseEngine;
+using ClearanceType = StormATC.Domain.ClearanceType;
 
 namespace StormATC.Application.Flight;
 
@@ -25,10 +26,12 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
 
     private readonly IFlightPhaseEngine _phaseEngine;
     private readonly IAutopilotService _autopilot;
+    private readonly IAutopilotActuator _actuator;
     private readonly AtcSessionContext _sessionContext;
     private readonly ITerrainProvider _terrainProvider;
     private readonly FlightOptions _flightOptions;
     private readonly TerrainOptions _terrainOptions;
+    private readonly AutoflyOptions _autoflyOptions;
     private readonly bool _featuresEnabled;
     private readonly ILogger<FlightOrchestrator> _logger;
 
@@ -46,19 +49,23 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
     public FlightOrchestrator(
         IFlightPhaseEngine phaseEngine,
         IAutopilotService autopilot,
+        IAutopilotActuator actuator,
         AtcSessionContext sessionContext,
         ITerrainProvider terrainProvider,
         IOptions<FlightOptions> flightOptions,
         IOptions<TerrainOptions> terrainOptions,
         IOptions<ApplicationOptions> applicationOptions,
+        IOptions<AutoflyOptions> autoflyOptions,
         ILogger<FlightOrchestrator> logger)
     {
         _phaseEngine = phaseEngine ?? throw new ArgumentNullException(nameof(phaseEngine));
         _autopilot = autopilot ?? throw new ArgumentNullException(nameof(autopilot));
+        _actuator = actuator ?? throw new ArgumentNullException(nameof(actuator));
         _sessionContext = sessionContext ?? throw new ArgumentNullException(nameof(sessionContext));
         _terrainProvider = terrainProvider ?? throw new ArgumentNullException(nameof(terrainProvider));
         _flightOptions = flightOptions?.Value ?? throw new ArgumentNullException(nameof(flightOptions));
         _terrainOptions = terrainOptions?.Value ?? throw new ArgumentNullException(nameof(terrainOptions));
+        _autoflyOptions = autoflyOptions?.Value ?? throw new ArgumentNullException(nameof(autoflyOptions));
         _featuresEnabled = applicationOptions?.Value.EnableAICopilotFeatures ?? false;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -194,6 +201,9 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
             CurrentTime = now,
             DescentRateFpm = _flightOptions.DefaultDescentRateFpm,
             CruiseSpeedKnots = _flightOptions.DefaultCruiseSpeedKt,
+            GroundTarget = ResolveGroundTarget(session, atcContext),
+            PushbackCleared = session.TaxiClearance is { IsAcknowledged: true } taxi
+                && taxi.Type is ClearanceType.Pushback or ClearanceType.Taxi,
         };
 
         PhaseDecision autonomous;
@@ -217,7 +227,14 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
             }
         }
 
-        _autopilot.Update(context, decision);
+        ControlTargets? targets = _autopilot.Update(context, decision);
+
+        if (_autoflyOptions.Enabled && targets is not null)
+        {
+            await _actuator
+                .UpdateAsync(targets, _currentPhase, session.AircraftState, ct)
+                .ConfigureAwait(false);
+        }
 
         lock (_sync)
         {
@@ -225,6 +242,195 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
             _lastTerrainProfile = terrain;
             _lastAircraftState = session.AircraftState;
         }
+    }
+
+    /// <summary>
+    /// Resolves the ground-navigation target for the current phase from published airport
+    /// geometry. Returns null when the data cannot describe a trustworthy target — the
+    /// autopilot then holds position instead of inventing a route.
+    /// </summary>
+    private GroundNavigationTarget? ResolveGroundTarget(
+        AtcSession session,
+        AtcEvaluationContext atcContext)
+    {
+        return _currentPhase switch
+        {
+            FlightPhase.TaxiOut => NextTaxiNodeTarget(
+                session, atcContext.DepartureAirport, session.TaxiClearance, "taxi-out"),
+            FlightPhase.HoldingShort => HoldPointTarget(session, atcContext.DepartureAirport),
+            FlightPhase.LineUp => RunwayAlignTarget(
+                session, atcContext.DepartureAirport, stopAtThreshold: true, description: "line-up"),
+            FlightPhase.Takeoff => RunwayAlignTarget(
+                session, atcContext.DepartureAirport, stopAtThreshold: false, description: "takeoff"),
+            FlightPhase.Rollout => RunwayAlignTarget(
+                session, atcContext.DestinationAirport ?? atcContext.DepartureAirport,
+                stopAtThreshold: true,
+                description: "rollout",
+                useRunwayEnd: true),
+            FlightPhase.TaxiIn => NextTaxiNodeTarget(
+                session, atcContext.DestinationAirport, session.TaxiClearance, "taxi-in"),
+            FlightPhase.Shutdown => StandTarget(
+                atcContext.DestinationAirport ?? atcContext.DepartureAirport,
+                session.AssignedStand,
+                session.AircraftState.Position),
+            _ => null,
+        };
+    }
+
+    /// <summary>Returns the next node position on the cleared taxi route.</summary>
+    private static GroundNavigationTarget? NextTaxiNodeTarget(
+        AtcSession session,
+        AirportData? airport,
+        Clearance? clearance,
+        string description)
+    {
+        if (airport?.TaxiGraph is not TaxiGraph graph
+            || clearance?.TaxiPathNodes is not { Count: > 0 } nodeNames)
+        {
+            return null;
+        }
+
+        TaxiRoute route = TaxiPathfinder.FromNodeSequence(
+            graph,
+            nodeNames,
+            clearance.TaxiPathTaxiways);
+
+        if (!route.Found || route.Nodes.Count == 0)
+        {
+            return null;
+        }
+
+        GeoPosition position = session.AircraftState.Position;
+        int closest = 0;
+        double closestDistance = double.MaxValue;
+        for (int i = 0; i < route.Nodes.Count; i++)
+        {
+            if (graph.FindNode(route.Nodes[i]) is not TaxiNode node)
+            {
+                continue;
+            }
+
+            double distance = position.DistanceMetersTo(node.Position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closest = i;
+            }
+        }
+
+        int targetIndex = Math.Min(closest + 1, route.Nodes.Count - 1);
+        TaxiNode? targetNode = graph.FindNode(route.Nodes[targetIndex]);
+        return targetNode is null
+            ? null
+            : new GroundNavigationTarget
+            {
+                Position = targetNode.Position,
+                StopAtTarget = true,
+                Description = $"{description} node {route.Nodes[targetIndex]}",
+            };
+    }
+
+    /// <summary>Returns the holding-point position for the assigned departure runway.</summary>
+    private static GroundNavigationTarget? HoldPointTarget(
+        AtcSession session,
+        AirportData? airport)
+    {
+        RunwayIdentifier? runway = session.TaxiClearance?.HoldShortOfRunway
+            ?? session.AssignedDepartureRunway;
+
+        if (airport is null || runway is not RunwayIdentifier identifier)
+        {
+            return null;
+        }
+
+        RunwayData? runwayData = airport.FindRunway(identifier);
+        if (runwayData?.HoldingPointNodes is not { Count: > 0 } holdNodes
+            || airport.TaxiGraph?.FindNode(holdNodes[^1]) is not TaxiNode node)
+        {
+            return null;
+        }
+
+        return new GroundNavigationTarget
+        {
+            Position = node.Position,
+            HeadingDegrees = identifier.CenterlineHeading.Degrees,
+            StopAtTarget = true,
+            Description = $"holding point {identifier.ToDisplay()}",
+        };
+    }
+
+    /// <summary>Returns a runway-alignment target for line-up, takeoff, or rollout.</summary>
+    private static GroundNavigationTarget? RunwayAlignTarget(
+        AtcSession session,
+        AirportData? airport,
+        bool stopAtThreshold,
+        string description,
+        bool useRunwayEnd = false)
+    {
+        RunwayIdentifier? runway = session.DepartureClearance?.Runway
+            ?? session.AssignedDepartureRunway
+            ?? session.AssignedArrivalRunway;
+
+        if (airport is null || runway is not RunwayIdentifier identifier)
+        {
+            return null;
+        }
+
+        RunwayData? runwayData = airport.FindRunway(identifier);
+        if (runwayData is null)
+        {
+            return null;
+        }
+
+        GeoPosition targetPosition = useRunwayEnd
+            ? runwayData.EndPosition
+            : runwayData.ThresholdPosition;
+
+        if (!stopAtThreshold && !useRunwayEnd)
+        {
+            // Aim slightly past the threshold so the aircraft keeps rolling through rotation.
+            targetPosition = targetPosition.Project(
+                Heading.FromDegrees(runwayData.CenterlineBearing.Degrees),
+                0.5);
+        }
+
+        return new GroundNavigationTarget
+        {
+            Position = targetPosition,
+            HeadingDegrees = identifier.CenterlineHeading.Degrees,
+            StopAtTarget = stopAtThreshold || useRunwayEnd,
+            Description = $"{description} runway {identifier.ToDisplay()}",
+        };
+    }
+
+    /// <summary>Returns the assigned stand position, or null when it is unknown.</summary>
+    private static GroundNavigationTarget? StandTarget(
+        AirportData? airport,
+        string? standName,
+        GeoPosition fallback)
+    {
+        if (airport is null)
+        {
+            return null;
+        }
+
+        if (standName is { Length: > 0 } name
+            && airport.FindStand(name) is StandData stand)
+        {
+            return new GroundNavigationTarget
+            {
+                Position = stand.Position,
+                StopAtTarget = true,
+                Description = $"stand {stand.Name}",
+            };
+        }
+
+        return new GroundNavigationTarget
+        {
+            Position = fallback,
+            StopAtTarget = true,
+            Description = "parking position",
+        };
     }
 
     private async Task<TerrainProfile?> BuildTerrainProfileAsync(AtcSession session, CancellationToken ct)

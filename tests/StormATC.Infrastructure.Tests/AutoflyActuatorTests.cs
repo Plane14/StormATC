@@ -1,0 +1,190 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using StormATC.Application.Abstractions;
+using StormATC.Application.Flight;
+using StormATC.Application.Options;
+using StormATC.Domain.Aircraft;
+using StormATC.Domain.Autofly;
+using StormATC.Domain.State;
+using StormATC.Domain.ValueObjects;
+using StormATC.Infrastructure.Simulator;
+using Xunit;
+using FlightPhase = StormATC.Domain.State.FlightPhase;
+
+namespace StormATC.Infrastructure.Tests;
+
+/// <summary>Tests for the autofly actuator against the mock simulator.</summary>
+public sealed class AutoflyActuatorTests : IAsyncLifetime, IDisposable
+{
+    private readonly MockSimulatorConnector _simulator = new(
+        NullLogger<MockSimulatorConnector>.Instance,
+        new TestClock());
+
+    private AutopilotActuatorService CreateActuator(bool enabled = true) => new(
+        _simulator,
+        new StubProfileProvider(),
+        Options.Create(new AutoflyOptions { Enabled = enabled }),
+        NullLogger<AutopilotActuatorService>.Instance);
+
+    public async Task InitializeAsync() => await _simulator.ConnectAsync(CancellationToken.None);
+
+    public async Task DisposeAsync() => await _simulator.DisposeAsync();
+
+    /// <inheritdoc />
+    public void Dispose() => _simulator.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(2));
+
+    [Fact]
+    public async Task DisabledActuatorSendsNothing()
+    {
+        AutopilotActuatorService actuator = CreateActuator(enabled: false);
+        await actuator.UpdateAsync(Targets(), FlightPhase.Cruise, State(), CancellationToken.None);
+
+        Assert.Empty(_simulator.AppliedAutopilotCommands);
+    }
+
+    [Fact]
+    public async Task CruiseTargetsEngageAndCommandHeadingAltitudeSpeed()
+    {
+        AutopilotActuatorService actuator = CreateActuator();
+        ControlTargets targets = Targets() with
+        {
+            Mode = AutopilotMode.AltitudeHold,
+            TargetHeadingDegrees = 270,
+            TargetAltitudeFeet = new AltitudeFeet(5000),
+            TargetSpeedKnots = new SpeedKnots(120),
+        };
+
+        await actuator.UpdateAsync(targets, FlightPhase.Cruise, State(), CancellationToken.None);
+
+        Assert.True(actuator.IsEngaged);
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.Kind == AutopilotCommandKind.EngageAutopilot);
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.Kind == AutopilotCommandKind.SetHeading && c.HeadingDegrees == 270);
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.Kind == AutopilotCommandKind.SetAltitude && c.AltitudeFeet == 5000);
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.Kind == AutopilotCommandKind.SetSpeed && c.SpeedKnots == 120);
+    }
+
+    [Fact]
+    public async Task IdenticalTargetsAreNotResent()
+    {
+        AutopilotActuatorService actuator = CreateActuator();
+        ControlTargets targets = Targets() with { TargetHeadingDegrees = 90 };
+
+        await actuator.UpdateAsync(targets, FlightPhase.Cruise, State(), CancellationToken.None);
+        int count = _simulator.AppliedAutopilotCommands.Count;
+        await actuator.UpdateAsync(targets, FlightPhase.Cruise, State(), CancellationToken.None);
+
+        Assert.Equal(count, _simulator.AppliedAutopilotCommands.Count);
+    }
+
+    [Fact]
+    public async Task ManualDisconnectPausesAutofly()
+    {
+        AutopilotActuatorService actuator = CreateActuator();
+        await actuator.UpdateAsync(Targets(), FlightPhase.Cruise, State(), CancellationToken.None);
+        Assert.True(actuator.IsEngaged);
+
+        // The aircraft now reports its autopilot off — the pilot took over.
+        AircraftState manual = State() with { AutopilotEngaged = false };
+        await actuator.UpdateAsync(Targets() with { TargetHeadingDegrees = 45 }, FlightPhase.Cruise, manual, CancellationToken.None);
+
+        Assert.False(actuator.IsEngaged);
+        Assert.Contains("manual", actuator.StatusMessage, StringComparison.OrdinalIgnoreCase);
+        int count = _simulator.AppliedAutopilotCommands.Count;
+        await actuator.UpdateAsync(Targets() with { TargetHeadingDegrees = 10 }, FlightPhase.Cruise, manual, CancellationToken.None);
+        Assert.Equal(count, _simulator.AppliedAutopilotCommands.Count);
+    }
+
+    [Fact]
+    public async Task DisengagedTargetsReleaseTheAutopilot()
+    {
+        AutopilotActuatorService actuator = CreateActuator();
+        await actuator.UpdateAsync(Targets(), FlightPhase.Cruise, State(), CancellationToken.None);
+        Assert.True(actuator.IsEngaged);
+
+        await actuator.UpdateAsync(
+            Targets() with { Mode = AutopilotMode.Disengaged },
+            FlightPhase.Shutdown,
+            State(),
+            CancellationToken.None);
+
+        Assert.False(actuator.IsEngaged);
+        Assert.Contains(_simulator.AppliedAutopilotCommands,
+            c => c.Kind == AutopilotCommandKind.DisengageAutopilot);
+    }
+
+    [Fact]
+    public async Task GroundConfigurationEventsReachTheMock()
+    {
+        AutopilotActuatorService actuator = CreateActuator();
+        ControlTargets targets = Targets() with
+        {
+            Mode = AutopilotMode.Disengaged,
+            EnginesRunning = true,
+            ParkingBrakeSet = false,
+            GearDown = false,
+            TargetFlapIndex = 2,
+            ThrottlePercent = 0,
+        };
+
+        await actuator.UpdateAsync(targets, FlightPhase.Startup, State(), CancellationToken.None);
+
+        AircraftState state = _simulator.GetCurrentState();
+        Assert.True(state.EnginesRunning);
+        Assert.False(state.ParkingBrakeSet);
+        Assert.False(state.GearHandleDown);
+        Assert.Equal(2, state.FlapsHandleIndex);
+    }
+
+    [Fact]
+    public async Task StaleStateIsNeverCommanded()
+    {
+        AutopilotActuatorService actuator = CreateActuator();
+        AircraftState stale = State() with { Timestamp = DateTimeOffset.UtcNow - TimeSpan.FromMinutes(5) };
+
+        await actuator.UpdateAsync(Targets(), FlightPhase.Cruise, stale, CancellationToken.None);
+
+        Assert.Empty(_simulator.AppliedAutopilotCommands);
+        Assert.Contains("stale", actuator.StatusMessage, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static ControlTargets Targets() => new()
+    {
+        Mode = AutopilotMode.HeadingHold,
+        GearDown = true,
+    };
+
+    private static AircraftState State() => AircraftState.Unknown(DateTimeOffset.UtcNow) with
+    {
+        AircraftTitle = "StormATC Mock A320",
+        AutopilotEngaged = true,
+    };
+
+    private sealed class StubProfileProvider : IAircraftAutoflyProfileProvider
+    {
+        public Task<AircraftAutoflyProfile> GetProfileAsync(
+            AircraftState aircraftState,
+            CancellationToken ct = default) =>
+            Task.FromResult(new AircraftAutoflyProfile
+            {
+                Name = "Mock profile",
+                CanAutofly = true,
+                Events = new Dictionary<string, string>
+                {
+                    ["engage"] = "MOCK_ENGAGE",
+                    ["disengage"] = "MOCK_DISENGAGE",
+                },
+            });
+    }
+
+    private sealed class TestClock : IClock
+    {
+        public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
+    }
+}

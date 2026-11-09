@@ -10,6 +10,7 @@
   ],
   "flightPlanId": "sample-storm123",
   "sourceIdentifier": "Sample",
+  "flightRules": "I",
   "callsign": "STORM123",
   "flightNumber": "123",
   "aircraftIcaoType": "A320",

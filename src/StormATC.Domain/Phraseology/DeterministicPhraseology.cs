@@ -67,6 +67,38 @@ public static class DeterministicPhraseology
         return builder.Build();
     }
 
+    /// <summary>Renders a VFR departure clearance.</summary>
+    public static string VfrClearance(Callsign callsign, Clearance clearance)
+    {
+        ArgumentNullException.ThrowIfNull(callsign);
+        ArgumentNullException.ThrowIfNull(clearance);
+
+        var builder = new PhraseBuilder(callsign);
+        builder.Add("cleared to depart");
+
+        if (clearance.ClearedToDestination is { Length: > 0 } destination)
+        {
+            builder.Add($"destination {SpellIcao(destination)}");
+        }
+
+        if (clearance.Runway is RunwayIdentifier runway)
+        {
+            builder.Add(runway.ToSpoken());
+        }
+
+        if (clearance.Squawk is SquawkCode squawk)
+        {
+            builder.Add($"squawk {squawk.ToSpoken()}");
+        }
+
+        if (clearance.NextFrequency is Frequency frequency)
+        {
+            builder.Add($"frequency {frequency.ToSpoken()}");
+        }
+
+        return builder.Build();
+    }
+
     /// <summary>Renders acceptance of a readback, optionally with the next frequency.</summary>
     public static string ReadbackCorrect(Callsign callsign, Frequency? nextFrequency, ControllerPosition? nextController)
     {

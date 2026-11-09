@@ -54,6 +54,8 @@ public sealed class DeterministicPilotIntentParser : IPilotIntentParser
              "departure frequency please", "approach frequency please"]),
 
         // --- Clearance delivery. ----------------------------------------------------------
+        new(PilotIntentType.RequestVfrClearance, 0.97,
+            ["request vfr clearance", "vfr clearance", "request vfr", "visual flight rules"]),
         new(PilotIntentType.RequestIFRClearance, 0.96,
             ["request ifr clearance", "request clearance", "ifr clearance", "ready to copy",
              "request ifr", "clearance request"]),
@@ -239,7 +241,7 @@ public sealed class DeterministicPilotIntentParser : IPilotIntentParser
         // Which intent type would a readback of this pending clearance be?
         PilotIntentType expectedReadbackType = pending.ClearanceType switch
         {
-            ClearanceType.IfrClearance => PilotIntentType.ClearanceReadback,
+            ClearanceType.IfrClearance or ClearanceType.VfrClearance => PilotIntentType.ClearanceReadback,
             ClearanceType.Taxi or ClearanceType.TaxiToStand => PilotIntentType.TaxiReadback,
             ClearanceType.Takeoff => PilotIntentType.TakeoffReadback,
             ClearanceType.LandingClearance => PilotIntentType.LandingReadback,

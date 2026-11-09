@@ -139,6 +139,108 @@ public interface ISimulatorConnector : IAsyncDisposable
     Task<bool> TuneCom1Async(
         Domain.ValueObjects.Frequency frequency,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Applies one deterministic aircraft-control command. Implementations must report whether
+    /// the command was accepted; a missing capability is a normal result, not an exception.
+    /// </summary>
+    Task<AutopilotCommandResult> ApplyAutopilotCommandAsync(
+        AutopilotCommand command,
+        CancellationToken cancellationToken);
+}
+
+/// <summary>The kind of aircraft-control command StormATC can ask a connector to apply.</summary>
+public enum AutopilotCommandKind
+{
+    /// <summary>Engage the aircraft autopilot or flight director.</summary>
+    EngageAutopilot,
+
+    /// <summary>Disengage the aircraft autopilot or flight director.</summary>
+    DisengageAutopilot,
+
+    /// <summary>Select or command a magnetic heading.</summary>
+    SetHeading,
+
+    /// <summary>Select or command a target altitude.</summary>
+    SetAltitude,
+
+    /// <summary>Select or command a vertical-speed target.</summary>
+    SetVerticalSpeed,
+
+    /// <summary>Select or command an indicated-airspeed or ground-speed target.</summary>
+    SetSpeed,
+
+    /// <summary>Fire a named simulator event, such as an aircraft-specific K-event.</summary>
+    TriggerEvent,
+
+    /// <summary>Write a named simulator variable, such as a flap or gear position.</summary>
+    SetVariable,
+}
+
+/// <summary>One deterministic control request handed to a simulator connector.</summary>
+public sealed record AutopilotCommand
+{
+    /// <summary>What the command asks the aircraft to do.</summary>
+    public required AutopilotCommandKind Kind { get; init; }
+
+    /// <summary>Heading target in degrees for <see cref="AutopilotCommandKind.SetHeading"/>.</summary>
+    public double? HeadingDegrees { get; init; }
+
+    /// <summary>Altitude target in feet for <see cref="AutopilotCommandKind.SetAltitude"/>.</summary>
+    public double? AltitudeFeet { get; init; }
+
+    /// <summary>Vertical-speed target in feet per minute.</summary>
+    public double? VerticalSpeedFeetPerMinute { get; init; }
+
+    /// <summary>Speed target in knots for <see cref="AutopilotCommandKind.SetSpeed"/>.</summary>
+    public double? SpeedKnots { get; init; }
+
+    /// <summary>
+    /// Simulator event name for <see cref="AutopilotCommandKind.TriggerEvent"/>, for example
+    /// an aircraft-profile K-event such as <c>K:AP_HDG_HOLD_ON</c>.
+    /// </summary>
+    public string? EventName { get; init; }
+
+    /// <summary>Numeric payload for an event or variable write, where the binding needs one.</summary>
+    public double? EventValue { get; init; }
+
+    /// <summary>Simulator variable name for <see cref="AutopilotCommandKind.SetVariable"/>.</summary>
+    public string? VariableName { get; init; }
+
+    /// <summary>Value written by <see cref="AutopilotCommandKind.SetVariable"/>.</summary>
+    public double? VariableValue { get; init; }
+}
+
+/// <summary>Whether a connector applied, refused, or could not deliver a control command.</summary>
+public enum AutopilotCommandStatus
+{
+    /// <summary>The command was accepted by the connector.</summary>
+    Applied,
+
+    /// <summary>The connector has no binding for this command or aircraft.</summary>
+    Unsupported,
+
+    /// <summary>The command was rejected by a safety or engagement policy.</summary>
+    Rejected,
+
+    /// <summary>No connected simulator was available.</summary>
+    Disconnected,
+
+    /// <summary>The connector failed while applying the command.</summary>
+    Failed,
+}
+
+/// <summary>The outcome of one <see cref="ISimulatorConnector.ApplyAutopilotCommandAsync"/> call.</summary>
+public sealed record AutopilotCommandResult
+{
+    /// <summary>The delivery status.</summary>
+    public required AutopilotCommandStatus Status { get; init; }
+
+    /// <summary>A short diagnostic message.</summary>
+    public string? Message { get; init; }
+
+    /// <summary>True when the connector accepted the command.</summary>
+    public bool IsSuccess => Status == AutopilotCommandStatus.Applied;
 }
 
 /// <summary>Carries a new aircraft snapshot.</summary>

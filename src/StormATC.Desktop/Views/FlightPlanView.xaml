@@ -85,7 +85,7 @@
         <StackPanel>
           <TextBlock Text="Filed plan" Style="{StaticResource SectionHeaderStyle}" />
 
-          <UniformGrid Columns="4" Rows="3">
+          <UniformGrid Columns="4" Rows="4">
             <StackPanel Margin="0,0,12,14">
               <TextBlock Text="CALLSIGN" Style="{StaticResource LabelTextStyle}" />
               <TextBlock Text="{Binding Callsign}" Style="{StaticResource ValueTextStyle}" />
@@ -101,6 +101,10 @@
             <StackPanel Margin="0,0,0,14">
               <TextBlock Text="DESTINATION" Style="{StaticResource LabelTextStyle}" />
               <TextBlock Text="{Binding Destination}" Style="{StaticResource ValueTextStyle}" />
+            </StackPanel>
+            <StackPanel Margin="0,0,12,14">
+              <TextBlock Text="RULES" Style="{StaticResource LabelTextStyle}" />
+              <TextBlock Text="{Binding FlightRules}" Style="{StaticResource ValueTextStyle}" />
             </StackPanel>
 
             <StackPanel Margin="0,0,12,14">

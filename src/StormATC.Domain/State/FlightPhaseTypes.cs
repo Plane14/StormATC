@@ -80,6 +80,37 @@ public sealed record PhaseEvaluationContext
 
     /// <summary>Planned cruise speed in knots, used for top-of-descent estimates.</summary>
     public double CruiseSpeedKnots { get; init; } = 140;
+
+    /// <summary>
+    /// True when the session holds an acknowledged pushback or taxi clearance, authorising
+    /// ground movement including pushback.
+    /// </summary>
+    public bool PushbackCleared { get; init; }
+
+    /// <summary>
+    /// Ground-navigation target for taxi, lineup, and rollout phases, resolved from published
+    /// airport geometry by the orchestrator. Null when no trustworthy target exists.
+    /// </summary>
+    public GroundNavigationTarget? GroundTarget { get; init; }
+}
+
+/// <summary>A point the aircraft should steer toward during a ground phase.</summary>
+public sealed record GroundNavigationTarget
+{
+    /// <summary>Target position.</summary>
+    public required GeoPosition Position { get; init; }
+
+    /// <summary>
+    /// Required magnetic heading when the aircraft must align with a runway or hold a
+    /// published direction. Null when steering to <see cref="Position"/> is sufficient.
+    /// </summary>
+    public double? HeadingDegrees { get; init; }
+
+    /// <summary>True when the aircraft must stop at this target rather than taxi through it.</summary>
+    public bool StopAtTarget { get; init; } = true;
+
+    /// <summary>Short description for logs and the UI.</summary>
+    public string Description { get; init; } = string.Empty;
 }
 
 /// <summary>Result of a flight phase evaluation.</summary>
@@ -140,6 +171,34 @@ public sealed record ControlTargets
 
     /// <summary>When true, the aircraft is a taildragger and tailwheel handling is applied.</summary>
     public bool Taildragger { get; init; }
+
+    /// <summary>Target flap detent index, when known for the aircraft.</summary>
+    public int? TargetFlapIndex { get; init; }
+
+    /// <summary>Parking brake state for ground phases.</summary>
+    public bool? ParkingBrakeSet { get; init; }
+
+    /// <summary>Landing-light state for approach phases.</summary>
+    public bool? LandingLightsOn { get; init; }
+
+    /// <summary>Taxi-light state for ground movement phases.</summary>
+    public bool? TaxiLightsOn { get; init; }
+
+    /// <summary>Beacon-light state.</summary>
+    public bool? BeaconOn { get; init; }
+
+    /// <summary>Target engine state: true to start, false to shut down, null to leave alone.</summary>
+    public bool? EnginesRunning { get; init; }
+
+    /// <summary>
+    /// True for one update when autofly should request a pushback. The orchestrator only sets
+    /// this while a pushback or taxi clearance is acknowledged — autofly never pushes back
+    /// without ATC authorisation.
+    /// </summary>
+    public bool PushbackRequested { get; init; }
+
+    /// <summary>Throttle lever position in percent, where the aircraft profile supports it.</summary>
+    public double? ThrottlePercent { get; init; }
 }
 
 /// <summary>A warning generated during phase evaluation.</summary>

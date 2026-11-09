@@ -16,6 +16,7 @@ public enum FlightPhase
     Preflight,
     ClearanceRequested,
     IFRClearanceIssued,
+    VfrClearanceIssued,
     Pushback,
     TaxiOut,
     HoldingShort,
@@ -60,6 +61,7 @@ public enum PilotIntentType
     InitialCall,
     RadioCheck,
     RequestIFRClearance,
+    RequestVfrClearance,
     ClearanceReadback,
     RequestPushback,
     RequestTaxi,
@@ -92,6 +94,25 @@ public enum PilotIntentType
     PilotAcknowledgement,
 }
 
+/// <summary>Rules of flight declared by the flight plan or inferred by a provider.</summary>
+public enum FlightRules
+{
+    /// <summary>Rules were not specified by the plan source.</summary>
+    Unknown = 0,
+
+    /// <summary>Visual flight rules for the whole flight.</summary>
+    Vfr,
+
+    /// <summary>Instrument flight rules for the whole flight.</summary>
+    Ifr,
+
+    /// <summary>The aircraft changes from VFR to IFR during the flight.</summary>
+    VfrThenIfr,
+
+    /// <summary>The aircraft changes from IFR to VFR during the flight.</summary>
+    IfrThenVfr,
+}
+
 /// <summary>
 /// Category of clearance held or issued. Note that <see cref="ApproachClearance"/> and
 /// <see cref="LandingClearance"/> are deliberately distinct: being cleared for the approach
@@ -101,6 +122,7 @@ public enum ClearanceType
 {
     None = 0,
     IfrClearance,
+    VfrClearance,
     Pushback,
     Taxi,
     LineUp,
@@ -252,6 +274,7 @@ public enum AtcResponseType
     None = 0,
     Acknowledgement,
     IfrClearance,
+    VfrClearance,
     ClearanceReadbackCorrection,
     PushbackApproval,
     TaxiClearance,

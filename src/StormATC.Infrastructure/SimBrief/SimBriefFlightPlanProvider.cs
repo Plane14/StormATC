@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StormATC.Application.Abstractions;
 using StormATC.Application.Options;
+using StormATC.Domain;
 using StormATC.Domain.FlightPlanning;
 using StormATC.Domain.ValueObjects;
 using StormATC.Infrastructure.Security;
@@ -230,6 +231,7 @@ public sealed class SimBriefFlightPlanProvider(
             FlightNumber = flightNumber,
             AircraftIcaoType = Read(aircraft, "icaocode") ?? Read(aircraft, "icao_code"),
             Registration = Read(aircraft, "reg"),
+            FlightRules = ParseFlightRules(Read(general, "flight_rules")),
             DepartureIcao = originIcao,
             DestinationIcao = destinationIcao,
             AlternateIcaos = alternates,
@@ -406,6 +408,19 @@ public sealed class SimBriefFlightPlanProvider(
         warnings.Add($"The planned {role} runway '{value}' could not be interpreted and was ignored.");
         return null;
     }
+
+    /// <summary>
+    /// Maps SimBrief's <c>flight_rules</c> code to the domain enum. SimBrief uses I/V/Y/Z:
+    /// I = IFR, V = VFR, Y = IFR then VFR, Z = VFR then IFR.
+    /// </summary>
+    private static FlightRules ParseFlightRules(string? value) => value?.Trim().ToUpperInvariant() switch
+    {
+        "I" => FlightRules.Ifr,
+        "V" => FlightRules.Vfr,
+        "Y" => FlightRules.IfrThenVfr,
+        "Z" => FlightRules.VfrThenIfr,
+        _ => FlightRules.Unknown,
+    };
 
     /// <summary>Normalises a SimBrief procedure identifier, treating its placeholders as absent.</summary>
     private static string? NormalizeProcedure(string? value) =>

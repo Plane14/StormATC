@@ -35,6 +35,9 @@ public sealed record FlightPlan
     /// <summary>Aircraft registration, where supplied.</summary>
     public string? Registration { get; init; }
 
+    /// <summary>The rules of flight declared by the plan source.</summary>
+    public FlightRules FlightRules { get; init; } = FlightRules.Unknown;
+
     /// <summary>ICAO code of the departure aerodrome.</summary>
     public required string DepartureIcao { get; init; }
 

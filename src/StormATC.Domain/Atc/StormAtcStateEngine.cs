@@ -115,6 +115,7 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
         {
             PilotIntentType.InitialCall => HandleInitialCall(context),
             PilotIntentType.RequestIFRClearance => HandleClearanceRequest(context),
+            PilotIntentType.RequestVfrClearance => HandleVfrClearanceRequest(context),
             PilotIntentType.ClearanceReadback
                 or PilotIntentType.TaxiReadback
                 or PilotIntentType.TakeoffReadback
@@ -553,6 +554,123 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
         };
     }
 
+    private static AtcDecision HandleVfrClearanceRequest(AtcEvaluationContext context)
+    {
+        AtcSession session = context.Session;
+
+        if (session.FlightPlan is not FlightPlanning.FlightPlan plan || session.Callsign is not Callsign callsign)
+        {
+            return AtcDecision.Reject(
+                "No flight plan is loaded.",
+                "Station calling, no flight plan is loaded. Import a flight plan first");
+        }
+
+        if (!context.AircraftState.IsOnGround)
+        {
+            return AtcDecision.Reject(
+                "VFR clearance may only be requested on the ground before departure.",
+                DeterministicPhraseology.Unable(callsign, "you are already airborne"));
+        }
+
+        if (session.Phase is not (FlightPhase.Preflight or FlightPhase.ClearanceRequested or FlightPhase.Disconnected))
+        {
+            return AtcDecision.Reject(
+                $"Clearance cannot be issued in the {session.Phase} phase.",
+                DeterministicPhraseology.Unable(callsign, "clearance has already been issued"));
+        }
+
+        // VFR needs a departure runway for the ground phase, but it does not need a SID, STAR,
+        // or a published initial climb. When the plan omits the runway, use the aerodrome's
+        // preferred surface so the pilot is not blocked by missing procedure data.
+        RunwayIdentifier? runway = plan.DepartureRunway
+            ?? session.AssignedDepartureRunway
+            ?? context.DepartureAirport?.SelectActiveRunway(context.Weather?.WindDirection)?.Identifier;
+
+        Frequency? departureFrequency = ResolveFrequency(context, ControllerPosition.Ground)
+            ?? ResolveFrequency(context, ControllerPosition.Tower);
+        SquawkCode squawk = context.PreassignedSquawk ?? SquawkCode.Vfr;
+
+        var clearance = new Clearance
+        {
+            ClearanceId = Guid.CreateVersion7(),
+            Type = ClearanceType.VfrClearance,
+            IssuedBy = ControllerPosition.ClearanceDelivery,
+            IssuedAt = context.CurrentTime,
+            ClearedToDestination = plan.DestinationIcao,
+            ClearedRoute = plan.Route ?? "as filed",
+            Runway = runway,
+            Squawk = squawk,
+            NextFrequency = departureFrequency,
+            RequiredReadbackItems = BuildVfrReadbackItemTypes(runway, departureFrequency),
+        };
+
+        var expectedItems = new List<ExpectedReadbackItem>
+        {
+            new()
+            {
+                Type = ReadbackItemType.Callsign,
+                ExpectedValue = callsign.Normalized,
+                SpokenValue = callsign.ToSpoken(),
+                IsCritical = true,
+            },
+        };
+
+        if (runway is RunwayIdentifier departureRunway)
+        {
+            expectedItems.Add(new ExpectedReadbackItem
+            {
+                Type = ReadbackItemType.Runway,
+                ExpectedValue = departureRunway.ToComparisonValue(),
+                SpokenValue = departureRunway.ToSpoken(),
+                IsCritical = true,
+            });
+        }
+
+        expectedItems.Add(new ExpectedReadbackItem
+        {
+            Type = ReadbackItemType.Squawk,
+            ExpectedValue = squawk.ToComparisonValue(),
+            SpokenValue = $"squawk {squawk.ToSpoken()}",
+            IsCritical = true,
+        });
+
+        if (departureFrequency is Frequency frequency)
+        {
+            expectedItems.Add(new ExpectedReadbackItem
+            {
+                Type = ReadbackItemType.Frequency,
+                ExpectedValue = frequency.ToComparisonValue(),
+                SpokenValue = $"frequency {frequency.ToSpoken()}",
+                IsCritical = false,
+            });
+        }
+
+        return new AtcDecision
+        {
+            Accepted = true,
+            ResponseType = AtcResponseType.VfrClearance,
+            NewPhase = FlightPhase.VfrClearanceIssued,
+            IssuedClearance = clearance,
+            RequiredReadback = new PendingReadback
+            {
+                ClearanceId = clearance.ClearanceId,
+                ClearanceType = ClearanceType.VfrClearance,
+                ExpectedItems = expectedItems,
+                IssuedAt = context.CurrentTime,
+                IsMandatory = true,
+            },
+            ApprovedFacts = clearance.ToRequiredFacts(),
+            ProhibitedFacts =
+            [
+                "taxi clearance",
+                "pushback approval",
+                "takeoff clearance",
+                "any altitude other than the planned VFR altitude",
+            ],
+            FallbackPhraseology = DeterministicPhraseology.VfrClearance(callsign, clearance),
+        };
+    }
+
     private AtcDecision HandleReadback(AtcEvaluationContext context, PilotIntent intent)
     {
         AtcSession session = context.Session;
@@ -612,8 +730,9 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
         AtcSession session = context.Session;
         Callsign? callsign = session.Callsign;
 
-        // After a correct IFR clearance readback the aircraft moves to Ground.
-        if (pending.ClearanceType == ClearanceType.IfrClearance && callsign is Callsign cs)
+        // After a correct departure clearance readback the aircraft moves to Ground.
+        if (pending.ClearanceType is ClearanceType.IfrClearance or ClearanceType.VfrClearance
+            && callsign is Callsign cs)
         {
             Frequency? groundFrequency = ResolveFrequency(context, ControllerPosition.Ground);
 
@@ -626,7 +745,9 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
                     ToFrequency = ground,
                     InstructedAt = context.CurrentTime,
                     State = HandoffState.Instructed,
-                    Reason = "IFR clearance readback accepted.",
+                    Reason = pending.ClearanceType == ClearanceType.VfrClearance
+                        ? "VFR clearance readback accepted."
+                        : "IFR clearance readback accepted.",
                 };
 
                 return new AtcDecision
@@ -675,6 +796,7 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
         pending.ClearanceType switch
         {
             ClearanceType.Taxi when session.Phase is FlightPhase.Pushback or FlightPhase.IFRClearanceIssued
+                or FlightPhase.VfrClearanceIssued
                 => FlightPhase.TaxiOut,
             ClearanceType.TaxiToStand when session.Phase == FlightPhase.Landed
                 => FlightPhase.TaxiIn,
@@ -710,7 +832,8 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
                 DeterministicPhraseology.Unable(callsign, "you are already moving"));
         }
 
-        if (session.Phase is not (FlightPhase.Preflight or FlightPhase.IFRClearanceIssued or FlightPhase.ClearanceRequested))
+        if (session.Phase is not (FlightPhase.Preflight or FlightPhase.IFRClearanceIssued
+            or FlightPhase.VfrClearanceIssued or FlightPhase.ClearanceRequested))
         {
             return AtcDecision.Reject(
                 $"Pushback is not available in the {session.Phase} phase.",
@@ -720,7 +843,7 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
         // Realism setting decides whether an unread-back clearance blocks pushback. Guard 6
         // has already handled the mandatory case; this covers the relaxed profile explicitly.
         if (context.Realism.RequireReadbackBeforeProgressing
-            && session.IfrClearance is { IsAcknowledged: false })
+            && (session.IfrClearance ?? session.VfrClearance) is { IsAcknowledged: false })
         {
             return AtcDecision.Reject(
                 "The IFR clearance has not been read back.",
@@ -777,7 +900,7 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
         }
 
         if (session.Phase is not (FlightPhase.Preflight or FlightPhase.IFRClearanceIssued
-            or FlightPhase.Pushback or FlightPhase.TaxiOut))
+            or FlightPhase.VfrClearanceIssued or FlightPhase.Pushback or FlightPhase.TaxiOut))
         {
             return AtcDecision.Reject(
                 $"Taxi is not available in the {session.Phase} phase.",
@@ -786,6 +909,7 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
 
         RunwayIdentifier? runway = session.AssignedDepartureRunway
             ?? session.IfrClearance?.Runway
+            ?? session.VfrClearance?.Runway
             ?? session.FlightPlan?.DepartureRunway
             ?? context.DepartureAirport?
                 .SelectActiveRunway(context.Weather?.WindDirection)?.Identifier;
@@ -1132,6 +1256,7 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
         AtcSession session = context.Session;
         if (session.CurrentController == ControllerPosition.ClearanceDelivery
             && session.Phase is FlightPhase.IFRClearanceIssued
+                or FlightPhase.VfrClearanceIssued
                 or FlightPhase.Pushback
                 or FlightPhase.TaxiOut)
         {
@@ -2078,7 +2203,8 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
 
     private static ControllerPosition? RequiredControllerFor(PilotIntentType intent) => intent switch
     {
-        PilotIntentType.RequestIFRClearance => ControllerPosition.ClearanceDelivery,
+        PilotIntentType.RequestIFRClearance or PilotIntentType.RequestVfrClearance
+            => ControllerPosition.ClearanceDelivery,
         PilotIntentType.RequestPushback or PilotIntentType.RequestTaxi
             or PilotIntentType.RequestProgressiveTaxi
             or PilotIntentType.RequestTaxiToStand => ControllerPosition.Ground,
@@ -2443,6 +2569,29 @@ public sealed class StormAtcStateEngine(IReadbackEvaluator readbackEvaluator) : 
             facts["windDirection"] = weather.WindDirection!.Value.ToComparisonValue();
             facts["windSpeed"] = weather.WindSpeedKnots!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
+    }
+
+    private static List<ReadbackItemType> BuildVfrReadbackItemTypes(
+        RunwayIdentifier? runway,
+        Frequency? nextFrequency)
+    {
+        var items = new List<ReadbackItemType>
+        {
+            ReadbackItemType.Callsign,
+            ReadbackItemType.Squawk,
+        };
+
+        if (runway is not null)
+        {
+            items.Add(ReadbackItemType.Runway);
+        }
+
+        if (nextFrequency is not null)
+        {
+            items.Add(ReadbackItemType.Frequency);
+        }
+
+        return items;
     }
 
     private static List<ReadbackItemType> BuildClearanceReadbackItemTypes(Frequency? departureFrequency)

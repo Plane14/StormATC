@@ -209,6 +209,28 @@ public sealed class SimulatorConnectorRouter : ISimulatorConnector
         }
     }
 
+    /// <inheritdoc />
+    public async Task<AutopilotCommandResult> ApplyAutopilotCommandAsync(
+        AutopilotCommand command,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        ISimulatorConnector? active = _active;
+        if (active?.ConnectionState != SimulatorConnectionState.Connected)
+        {
+            return new AutopilotCommandResult
+            {
+                Status = AutopilotCommandStatus.Disconnected,
+                Message = "No connected simulator is available.",
+            };
+        }
+
+        return await active.ApplyAutopilotCommandAsync(command, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     /// <summary>Connects the preferred connector, falling back to the mock. Caller holds the lock.</summary>
     private async Task ConnectPreferredAsync(CancellationToken cancellationToken)
     {

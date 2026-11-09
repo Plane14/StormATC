@@ -3,7 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Options;
 using StormATC.Application.Abstractions;
+using StormATC.Application.Options;
 
 namespace StormATC.Desktop.ViewModels;
 
@@ -12,6 +14,7 @@ public sealed partial class FlightMonitorViewModel : ObservableObject, IRefresha
 {
     private readonly IFlightOrchestrator _flightOrchestrator;
     private readonly IAutopilotService _autopilot;
+    private readonly IAutopilotActuator _actuator;
 
     [ObservableProperty]
     private string _currentPhase = "Unknown";
@@ -43,11 +46,23 @@ public sealed partial class FlightMonitorViewModel : ObservableObject, IRefresha
     [ObservableProperty]
     private string _statusMessage = "Flight monitor ready.";
 
+    [ObservableProperty]
+    private bool _autoflyEnabled;
+
+    [ObservableProperty]
+    private string _autoflyStatus = "Autofly disabled.";
+
     /// <summary>Creates a flight monitor view model.</summary>
-    public FlightMonitorViewModel(IFlightOrchestrator flightOrchestrator, IAutopilotService autopilot)
+    public FlightMonitorViewModel(
+        IFlightOrchestrator flightOrchestrator,
+        IAutopilotService autopilot,
+        IAutopilotActuator actuator,
+        IOptions<AutoflyOptions> autoflyOptions)
     {
         _flightOrchestrator = flightOrchestrator ?? throw new ArgumentNullException(nameof(flightOrchestrator));
         _autopilot = autopilot ?? throw new ArgumentNullException(nameof(autopilot));
+        _actuator = actuator ?? throw new ArgumentNullException(nameof(actuator));
+        AutoflyEnabled = autoflyOptions?.Value.Enabled ?? false;
     }
 
     /// <inheritdoc />
@@ -74,9 +89,25 @@ public sealed partial class FlightMonitorViewModel : ObservableObject, IRefresha
         }
     }
 
+    /// <summary>Enables or disables user-aircraft autofly.</summary>
+    [RelayCommand]
+    public async Task ToggleAutoflyAsync()
+    {
+        try
+        {
+            await _actuator.SetEnabledAsync(AutoflyEnabled, CancellationToken.None);
+            AutoflyStatus = _actuator.StatusMessage;
+        }
+        catch (Exception ex)
+        {
+            AutoflyStatus = $"Autofly toggle failed: {ex.Message}";
+        }
+    }
+
     private void UpdateFromServices()
     {
         CurrentPhase = _flightOrchestrator.CurrentPhase.ToString();
+        AutoflyStatus = _actuator.StatusMessage;
 
         Domain.State.ControlTargets? targets = _autopilot.CurrentTargets;
         AutopilotMode = targets?.Mode.ToString() ?? "Disengaged";
