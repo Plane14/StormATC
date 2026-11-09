@@ -365,7 +365,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IFlightPhaseEngine, FlightPhaseEngine>();
         services.AddSingleton<IChecklistService, ChecklistService>();
         services.AddSingleton<IContinuousFlightService, ContinuousFlightService>();
-        services.AddSingleton<ITerrainProvider, MsfsTerrainProvider>();
+        services.AddHttpClient<Terrain.OpenMeteoTerrainProvider>()
+            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler
+            {
+                AllowAutoRedirect = false,
+            });
+        services.AddSingleton<ITerrainProvider>(sp =>
+            sp.GetRequiredService<Terrain.OpenMeteoTerrainProvider>());
         services.AddSingleton<IChecklistRepository, JsonChecklistRepository>();
     }
 }

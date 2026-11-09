@@ -19,7 +19,7 @@ using IFlightPhaseEngine = StormATC.Domain.Atc.IFlightPhaseEngine;
 namespace StormATC.Application.Flight;
 
 /// <summary>Orchestrates flight phases and coordinates all flight-related services.</summary>
-public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensions.Hosting.IHostedService
+public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensions.Hosting.IHostedService, IDisposable
 {
     private static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(1);
 
@@ -33,6 +33,7 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
     private readonly ILogger<FlightOrchestrator> _logger;
 
     private readonly object _sync = new();
+    private readonly SemaphoreSlim _tickLock = new(1, 1);
     private CancellationTokenSource? _cts;
     private Task? _loopTask;
     private FlightPhase _currentPhase = FlightPhase.Unknown;
@@ -145,8 +146,30 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
         _logger.LogInformation("Flight orchestrator stopped.");
     }
 
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _tickLock.Dispose();
+        _cts?.Dispose();
+    }
+
     /// <summary>Performs one tick of flight phase evaluation and control target generation.</summary>
     public async Task TickAsync(CancellationToken ct)
+    {
+        // The hosted loop and the Flight Monitor refresh can both tick; serialize them so a
+        // phase transition is never evaluated twice against the same stale phase.
+        await _tickLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await TickCoreAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _tickLock.Release();
+        }
+    }
+
+    private async Task TickCoreAsync(CancellationToken ct)
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
         AtcSession session = _sessionContext.CurrentSession;
@@ -173,20 +196,25 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
             CruiseSpeedKnots = _flightOptions.DefaultCruiseSpeedKt,
         };
 
-        PhaseDecision autonomous = _phaseEngine.EvaluateStateChange(context);
-        if (autonomous.NewPhase is { } autonomousPhase && autonomousPhase != _currentPhase)
+        PhaseDecision autonomous;
+        PhaseDecision decision;
+        lock (_sync)
         {
-            _logger.LogInformation("Phase transition: {OldPhase} -> {NewPhase}", _currentPhase, autonomousPhase);
-            _currentPhase = autonomousPhase;
-            context = context with { CurrentPhase = autonomousPhase };
-        }
+            autonomous = _phaseEngine.EvaluateStateChange(context);
+            if (autonomous.NewPhase is { } autonomousPhase && autonomousPhase != _currentPhase)
+            {
+                _logger.LogInformation("Phase transition: {OldPhase} -> {NewPhase}", _currentPhase, autonomousPhase);
+                _currentPhase = autonomousPhase;
+                context = context with { CurrentPhase = autonomousPhase };
+            }
 
-        PhaseDecision decision = _phaseEngine.Evaluate(context);
-        if (decision.NewPhase is { } newPhase && newPhase != _currentPhase)
-        {
-            _logger.LogInformation("Phase transition: {OldPhase} -> {NewPhase}", _currentPhase, newPhase);
-            _currentPhase = newPhase;
-            context = context with { CurrentPhase = newPhase };
+            decision = _phaseEngine.Evaluate(context);
+            if (decision.NewPhase is { } newPhase && newPhase != _currentPhase)
+            {
+                _logger.LogInformation("Phase transition: {OldPhase} -> {NewPhase}", _currentPhase, newPhase);
+                _currentPhase = newPhase;
+                context = context with { CurrentPhase = newPhase };
+            }
         }
 
         _autopilot.Update(context, decision);
@@ -232,6 +260,8 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
             double maxRequired = 0;
             bool mountainous = false;
             bool any = false;
+            double cumulativeNm = 0;
+            GeoPosition previous = session.AircraftState.Position;
 
             for (int i = 0; i < elevations.Count; i++)
             {
@@ -247,9 +277,16 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
                 double required = elev + margin;
                 maxRequired = Math.Max(maxRequired, required);
                 mountainous |= isMountainous;
+
+                if (i < points.Count)
+                {
+                    cumulativeNm += previous.DistanceNauticalMilesTo(points[i]);
+                    previous = points[i];
+                }
+
                 segments.Add(new TerrainSegment
                 {
-                    DistanceNm = i * _terrainOptions.PreFlightSampleSpacingNm,
+                    DistanceNm = cumulativeNm,
                     TerrainElevationFt = elev,
                     RequiredAltitudeFt = required,
                     IsMountainous = isMountainous,
@@ -280,7 +317,7 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
         }
     }
 
-    private List<GeoPosition> GetTerrainSamplePoints(AtcSession session)
+    private static List<GeoPosition> GetTerrainSamplePoints(AtcSession session)
     {
         var points = new List<GeoPosition>();
         if (session.FlightPlan?.RouteLegs is { Count: > 0 } legs)
@@ -292,13 +329,6 @@ public sealed class FlightOrchestrator : IFlightOrchestrator, Microsoft.Extensio
                     points.Add(position);
                 }
             }
-        }
-
-        if (points.Count == 0
-            && _sessionContext.CurrentSession.FlightPlan?.DestinationIcao is { Length: > 0 } destinationIcao)
-        {
-            // Airport positions are resolved asynchronously elsewhere; without a position here we
-            // simply skip terrain rather than invent coordinates.
         }
 
         return points;
