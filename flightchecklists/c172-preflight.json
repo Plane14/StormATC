@@ -1,0 +1,57 @@
+{
+  "Id": "c172-preflight",
+  "Name": "Cessna 172 Preflight",
+  "AircraftType": "C172",
+  "Category": "Preflight",
+  "Description": "Standard preflight inspection for Cessna 172 Skyhawk.",
+  "Steps": [
+    {
+      "Id": "1",
+      "Title": "Cabin",
+      "Description": "Verify ignition off, seats/belts secured, circuit breakers in.",
+      "Type": "Action",
+      "ExpectedResponse": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "2",
+      "Title": "Fuel",
+      "Description": "Check fuel quantity, quality, vents, and filler caps.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "3",
+      "Title": "Empennage",
+      "Description": "Check horizontal stabilizer, elevator, rudder, trim tab, tie-down removed.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "4",
+      "Title": "Right Wing",
+      "Description": "Check aileron, flap, wing tie-down, pitot tube, fuel tank, fuel sump.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "5",
+      "Title": "Nose",
+      "Description": "Check propeller, cowling, oil level, landing light, nose wheel tire.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "IsOptional": false
+    },
+    {
+      "Id": "6",
+      "Title": "Left Wing",
+      "Description": "Check pitot tube removal, fuel tank, fuel sump, wing tie-down, flap, aileron.",
+      "Type": "Verification",
+      "ExpectedResponse": null,
+      "IsOptional": false
+    }
+  ]
+}
